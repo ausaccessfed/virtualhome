@@ -10,6 +10,7 @@ import aaf.base.identity.*
 
 @TestFor(aaf.vhr.AccountController)
 @Build([aaf.vhr.Organization, aaf.vhr.Group, aaf.vhr.ManagedSubject, aaf.base.identity.Subject, aaf.base.identity.Role, aaf.vhr.switchch.vho.DeprecatedSubject])
+@Mock([Organization, Group])
 class AccountControllerSpec extends spock.lang.Specification {
 
   def 'ensure index provides a view'() {

@@ -12,6 +12,7 @@ import aaf.base.identity.*
 
 @TestFor(aaf.vhr.DashboardController)
 @Build([aaf.vhr.Organization, aaf.vhr.Group, aaf.vhr.ManagedSubject, aaf.base.identity.Subject, aaf.base.identity.Role])
+@Mock([Organization, Group])
 class DashboardControllerSpec extends spock.lang.Specification {
   
   @Shared def shiroEnvironment = new ShiroEnvironment()

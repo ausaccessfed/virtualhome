@@ -40,7 +40,7 @@ class ManagedSubjectServiceSpec extends IntegrationSpec {
 
     grailsApplication.config.aaf.vhr.sharedtoken.idp_entityid="https://test.server.com/idp"
     grailsApplication.config.aaf.vhr.sharedtoken.sha_rounds=2048
-    grailsApplication.config.aaf.vhr.crypto.log_rounds = 12
+    grailsApplication.config.aaf.vhr.crypto.log_rounds = 4
     grailsApplication.config.aaf.vhr.crypto.sha_rounds = 2048
   }
 

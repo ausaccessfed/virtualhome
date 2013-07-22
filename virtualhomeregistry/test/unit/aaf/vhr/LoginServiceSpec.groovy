@@ -7,6 +7,7 @@ import grails.plugin.spock.*
 
 @TestFor(aaf.vhr.LoginService)
 @Build([aaf.vhr.Organization, aaf.vhr.Group, aaf.vhr.ManagedSubject])
+@Mock([Organization, Group, StateChange, ManagedSubject])
 class LoginServiceSpec extends spock.lang.Specification {
 
   @Shared 

@@ -9,6 +9,7 @@ import aaf.vhr.ManagedSubject
 
 @TestFor(aaf.vhr.ManagedSubject)
 @Build([ManagedSubject])
+@Mock([Organization, Group])
 class PasswordValidationServiceSpec extends UnitSpec {
 
   def pv
@@ -16,7 +17,7 @@ class PasswordValidationServiceSpec extends UnitSpec {
 
   def setup() {
     cs = new CryptoService(grailsApplication: grailsApplication)
-    grailsApplication.config.aaf.vhr.crypto.log_rounds = 12
+    grailsApplication.config.aaf.vhr.crypto.log_rounds = 4
     grailsApplication.config.aaf.vhr.crypto.sha_rounds = 2048
     pv = new PasswordValidationService(grailsApplication: grailsApplication, cryptoService: cs)
   }

@@ -10,13 +10,14 @@ import aaf.vhr.crypto.BCrypt
 
 @TestFor(aaf.vhr.CryptoService)
 @Build([ManagedSubject, ChallengeResponse, EmailReset])
+@Mock([Organization, Group, ManagedSubject])
 class CryptoServiceSpec extends UnitSpec {
 
   def cs
 
   def setup() {
     cs = new CryptoService(grailsApplication: grailsApplication)
-    grailsApplication.config.aaf.vhr.crypto.log_rounds = 12
+    grailsApplication.config.aaf.vhr.crypto.log_rounds = 4
     grailsApplication.config.aaf.vhr.crypto.sha_rounds = 2048
   }
 

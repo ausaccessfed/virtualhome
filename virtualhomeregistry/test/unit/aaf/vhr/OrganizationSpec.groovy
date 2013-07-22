@@ -9,6 +9,7 @@ import test.shared.ShiroEnvironment
 
 @TestFor(aaf.vhr.Organization)
 @Build([aaf.vhr.Organization, aaf.vhr.ManagedSubject, aaf.vhr.Group])
+@Mock([Organization, Group])
 class OrganizationSpec extends UnitSpec {
 
   @Shared def shiroEnvironment = new ShiroEnvironment()

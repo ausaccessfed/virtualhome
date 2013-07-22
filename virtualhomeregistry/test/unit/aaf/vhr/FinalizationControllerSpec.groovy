@@ -12,6 +12,7 @@ import aaf.base.identity.*
 
 @TestFor(aaf.vhr.FinalizationController)
 @Build([ManagedSubject, ManagedSubjectInvitation, aaf.base.identity.Subject, aaf.base.identity.Role, aaf.base.identity.Permission])
+@Mock([Organization, Group])
 class FinalizationControllerSpec  extends spock.lang.Specification {
   
   @Shared def shiroEnvironment = new ShiroEnvironment()

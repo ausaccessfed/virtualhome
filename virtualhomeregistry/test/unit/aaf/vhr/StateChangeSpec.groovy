@@ -9,6 +9,7 @@ import aaf.vhr.ManagedSubject
 
 @TestFor(aaf.vhr.StateChange)
 @Build([ManagedSubject, aaf.base.identity.Subject])
+@Mock([StateChange, ManagedSubject, aaf.base.identity.Subject, Organization, Group])
 class StateChangeSpec extends spock.lang.Specification {
 
   def 'ensure creation of basic state active change'() {

@@ -10,6 +10,7 @@ import test.shared.ShiroEnvironment
 
 @TestFor(aaf.vhr.ManagedSubjectController)
 @Build([Organization, Group, ManagedSubject, aaf.base.identity.Subject])
+@Mock([Organization, Group, StateChange])
 class ManagedSubjectControllerSpec  extends spock.lang.Specification {
   
   @Shared def shiroEnvironment = new ShiroEnvironment()

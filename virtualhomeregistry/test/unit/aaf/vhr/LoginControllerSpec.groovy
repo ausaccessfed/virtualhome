@@ -11,6 +11,7 @@ import aaf.vhr.switchch.vho.DeprecatedSubject
 
 @TestFor(aaf.vhr.LoginController)
 @Build([aaf.vhr.Organization, aaf.vhr.Group, aaf.vhr.ManagedSubject,aaf.vhr.switchch.vho.DeprecatedSubject])
+@Mock([Organization, Group])
 class LoginControllerSpec extends spock.lang.Specification {
 
   def "index errors if no sso url provided in request or session"() {

@@ -12,6 +12,7 @@ import aaf.base.identity.*
 
 @TestFor(aaf.vhr.ManageAdministratorsController)
 @Build([Organization, Group, aaf.base.identity.Subject, aaf.base.identity.Role])
+@Mock([Role, ManagedSubject])
 class ManageAdministratorsControllerSpec extends spock.lang.Specification {
   
   @Shared def shiroEnvironment = new ShiroEnvironment()

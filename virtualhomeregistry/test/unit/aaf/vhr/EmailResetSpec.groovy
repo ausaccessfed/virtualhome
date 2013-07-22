@@ -9,6 +9,7 @@ import aaf.vhr.ManagedSubject
 
 @TestFor(aaf.vhr.EmailReset)
 @Build([ManagedSubject, EmailReset])
+@Mock([Organization, Group, ManagedSubject])
 class EmailResetSpec extends UnitSpec {
 
   def 'ensure code must not be null or blank and 24 characters long'() {

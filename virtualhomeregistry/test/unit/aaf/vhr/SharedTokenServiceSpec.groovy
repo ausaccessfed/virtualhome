@@ -9,6 +9,7 @@ import aaf.vhr.ManagedSubject
 
 @TestFor(aaf.vhr.SharedTokenService)
 @Build([ManagedSubject])
+@Mock([Organization, Group])
 class SharedTokenServiceSpec extends UnitSpec {
   
   def st
