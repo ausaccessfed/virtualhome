@@ -51,41 +51,24 @@ class BootStrap {
           SecurityUtils.metaClass = null
         }
 
-        def registered_managed_subject = EmailTemplate.findWhere(name:'registered_managed_subject') 
-        if(!registered_managed_subject) {
-          def templateMarkup = grailsApplication.parentContext.getResource("classpath:aaf/vhr/registered_managed_subject.gsp").inputStream.text
-          registered_managed_subject = new EmailTemplate(name:'registered_managed_subject', content: templateMarkup)
-          if(!registered_managed_subject.save()) {
-            registered_managed_subject.errors.each {
-              println it
+        def seedEmailTemplate = { name ->
+          def template = EmailTemplate.findWhere(name: name)
+          if(!template) {
+            def templateMarkup = grailsApplication.parentContext.getResource("classpath:aaf/vhr/${name}.gsp").inputStream.text
+            template = new EmailTemplate(name: name, content: templateMarkup)
+            if(!template.save()) {
+              template.errors.each {
+                println it
+              }
+              throw new RuntimeException("Unable to populate initial email template $name")
             }
-            throw new RuntimeException("Unable to populate initial user registration email template registered_managed_subject")
           }
         }
-        
-        def approved_new_organization = EmailTemplate.findWhere(name:'approved_new_organization') 
-        if(!approved_new_organization) {
-          def templateMarkup = grailsApplication.parentContext.getResource("classpath:aaf/vhr/approved_new_organization.gsp").inputStream.text
-          approved_new_organization = new EmailTemplate(name:'approved_new_organization', content: templateMarkup)
-          if(!approved_new_organization.save()) {
-            approved_new_organization.errors.each {
-              println it
-            }
-            throw new RuntimeException("Unable to populate initial user registration email template approved_new_organization")
-          }
-        }
-      }
 
-      def email_password_code = EmailTemplate.findWhere(name:'email_password_code') 
-      if(!email_password_code) {
-        def templateMarkup = grailsApplication.parentContext.getResource("classpath:aaf/vhr/email_password_code.gsp").inputStream.text
-        email_password_code = new EmailTemplate(name:'email_password_code', content: templateMarkup)
-        if(!email_password_code.save()) {
-          email_password_code.errors.each {
-            println it
-          }
-          throw new RuntimeException("Unable to populate initial user registration email template email_password_code")
-        }
+        seedEmailTemplate('registered_managed_subject')
+        seedEmailTemplate('approved_new_organization')
+        seedEmailTemplate('email_password_code')
+        seedEmailTemplate('email_lost_username')
       }
     }
 

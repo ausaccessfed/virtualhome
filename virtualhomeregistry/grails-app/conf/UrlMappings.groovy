@@ -58,6 +58,9 @@ class UrlMappings {
     "/lostpassword/$action" {
       controller="lostPassword"
     }
+    "/lostusername/$action" {
+      controller="lostUsername"
+    }
     "/migration/$action" {
       controller="migrate"
     }

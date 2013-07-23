@@ -50,6 +50,7 @@
   <ul class="muted">
     <li><g:message code="templates.aaf.vhr.loginform.help.myaccount"/></li>
     <li><g:link controller="lostPassword" action="start"><g:message code="templates.aaf.vhr.loginform.help.lostpwd"/></g:link></li> 
+    <li><g:link controller="lostUsername" action="start"><g:message code="templates.aaf.vhr.loginform.help.lostusername"/></g:link></li>
     <li><g:message code="templates.aaf.vhr.loginform.help.guide"/></li>
     <li><a href="http://support.aaf.edu.au/entries/22539753-I-m-collaborating-with-an-Institution-how-do-I-get-access-to-an-AAF-VH-account-"><g:message code="templates.aaf.vhr.loginform.help.account"/></a></li>
   </ul>
