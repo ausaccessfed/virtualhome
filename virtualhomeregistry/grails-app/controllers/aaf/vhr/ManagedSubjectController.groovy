@@ -156,6 +156,15 @@ class ManagedSubjectController {
 
   def edit(Long id) {
     def managedSubjectInstance = ManagedSubject.get(id)
+
+    if(!SecurityUtils.subject.isPermitted('app:administrator') && managedSubjectInstance.login == null) {
+      log.warn "Attempt to do administrative ManagedSubject edit by $subject was denied - not global administrator, and account has not been finalized"
+      flash.type = 'error'
+      flash.message = 'controllers.aaf.vhr.managedsubject.edit.notfinalized'
+      redirect(action: "show", id: managedSubjectInstance.id)
+      return
+    }
+
     if(managedSubjectInstance.canMutate()) {
       log.info "Action: edit, Subject: $subject, Object: managedSubjectInstance"
 
@@ -169,6 +178,13 @@ class ManagedSubjectController {
 
   def update(Long id, Long version) {
     def managedSubjectInstance = ManagedSubject.get(id)
+
+    if(!SecurityUtils.subject.isPermitted('app:administrator') && managedSubjectInstance.login == null) {
+      log.warn "Attempt to do administrative ManagedSubject edit by $subject was denied - not global administrator, and account has not been finalized"
+      response.sendError 403
+      return
+    }
+
     if(managedSubjectInstance.canMutate()) {
       if (version == null) {
         flash.type = 'error'

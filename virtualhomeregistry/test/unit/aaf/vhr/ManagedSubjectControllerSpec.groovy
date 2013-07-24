@@ -10,7 +10,7 @@ import test.shared.ShiroEnvironment
 
 @TestFor(aaf.vhr.ManagedSubjectController)
 @Build([Organization, Group, ManagedSubject, aaf.base.identity.Subject])
-@Mock([Organization, Group, StateChange])
+@Mock([Organization, Group, ManagedSubject, StateChange])
 class ManagedSubjectControllerSpec  extends spock.lang.Specification {
   
   @Shared def shiroEnvironment = new ShiroEnvironment()
@@ -515,12 +515,43 @@ class ManagedSubjectControllerSpec  extends spock.lang.Specification {
     response.status == 403
   }
 
+  def 'ensure correct output from edit when invalid permission for a non-finalized account'() {
+    setup:
+    def group = Group.build()
+    def managedSubjectTestInstance = ManagedSubject.build(group:group, organization:group.organization, login:null)
+    shiroSubject.isPermitted("app:manage:organization:${group.organization.id}:group:${group.id + 1}:managedsubject:${managedSubjectTestInstance.id}:edit") >> true
+
+    when:
+    params.id = managedSubjectTestInstance.id
+    def model = controller.edit()
+
+    then:
+    model == null
+    flash.type == 'error'
+    flash.message == 'controllers.aaf.vhr.managedsubject.edit.notfinalized'
+  }
+
   def 'ensure correct output from edit when valid permission'() {
     setup:
     def group = Group.build()
     group.organization.active = true
     def managedSubjectTestInstance = ManagedSubject.build(group:group, organization:group.organization)
     shiroSubject.isPermitted("app:manage:organization:${group.organization.id}:group:${group.id}:managedsubject:${managedSubjectTestInstance.id}:edit") >> true
+
+    when:
+    params.id = managedSubjectTestInstance.id
+    def model = controller.edit()
+
+    then:
+    model.managedSubjectInstance == managedSubjectTestInstance
+  }
+
+  def 'ensure correct output from edit when valid permission for a non-finalized account'() {
+    setup:
+    def group = Group.build()
+    group.organization.active = true
+    def managedSubjectTestInstance = ManagedSubject.build(group:group, organization:group.organization, login:null)
+    shiroSubject.isPermitted("app:administrator") >> true
 
     when:
     params.id = managedSubjectTestInstance.id
@@ -546,13 +577,30 @@ class ManagedSubjectControllerSpec  extends spock.lang.Specification {
     response.status == 403
   }
 
+  def 'ensure correct output from update when invalid permission for a non-finalized account'() {
+    setup:
+    def group = Group.build()
+    group.organization.active = true
+    def managedSubjectTestInstance = ManagedSubject.build(group:group, organization:group.organization, login:null)
+    shiroSubject.isPermitted("app:manage:organization:${group.organization.id}:group:${group.id}:managedsubject:${managedSubjectTestInstance.id}:edit") >> true
+
+    when:
+    params.sharedToken = 'efgh5678'
+    params.id = managedSubjectTestInstance.id
+    params.version = 0
+    controller.update()
+
+    then:
+    response.status == 403
+  }
+
   def 'ensure correct output from update with null version but valid permission'() {
     setup:
     def group = Group.build()
     group.organization.active = true
     def managedSubjectTestInstance = ManagedSubject.build(group:group, organization:group.organization)
     shiroSubject.isPermitted("app:manage:organization:${group.organization.id}:group:${group.id}:managedsubject:${managedSubjectTestInstance.id}:edit") >> true
-    
+
     expect:
     ManagedSubject.count() == 1
 
@@ -584,7 +632,7 @@ class ManagedSubjectControllerSpec  extends spock.lang.Specification {
       }
     }
     ManagedSubject.metaClass.save { null }
-    
+
     expect:
     ManagedSubject.count() == 1
 
@@ -643,6 +691,44 @@ class ManagedSubjectControllerSpec  extends spock.lang.Specification {
     savedManagedSubjectTestInstance.sharedToken == 'abcd1234'
   }
 
+  def 'ensure correct output from update with valid data and when valid permission for a non-finalized account'() {
+    setup:
+    def group = Group.build()
+    group.organization.active = true
+    def managedSubjectTestInstance = ManagedSubject.build(group:group, organization:group.organization, sharedToken:'abcd1234', login:null)
+    shiroSubject.isPermitted('app:administrator') >> true
+
+    managedSubjectTestInstance.properties.each {
+      if(it.value) {
+        if(grailsApplication.isDomainClass(it.value.getClass()))
+          params."${it.key}" = [id:"${it.value.id}"]
+        else
+          params."${it.key}" = "${it.value}"
+      }
+    }
+
+    expect:
+    ManagedSubject.count() == 1
+
+    when:
+    params.sharedToken = 'efgh5678'
+    params.id = managedSubjectTestInstance.id
+    params.version = 0
+    controller.update()
+
+    then:
+    ManagedSubject.count() == 1
+    flash.type == 'success'
+    flash.message == 'controllers.aaf.vhr.managedsubject.update.success'
+
+    def savedManagedSubjectTestInstance = ManagedSubject.first()
+    savedManagedSubjectTestInstance == managedSubjectTestInstance
+
+    savedManagedSubjectTestInstance.properties.each {
+      it.value == managedSubjectTestInstance.getProperty(it.key)
+    }
+  }
+
   def 'ensure correct output from update with valid data including entitlements and when valid permission'() {
     setup:
     def group = Group.build()
@@ -693,7 +779,7 @@ class ManagedSubjectControllerSpec  extends spock.lang.Specification {
     group.organization.active = true
     def managedSubjectTestInstance = ManagedSubject.build(group:group, organization:group.organization, sharedToken:'abcd1234', eduPersonAffiliation:'employee')
     shiroSubject.isPermitted("app:manage:organization:${group.organization.id}:group:${group.id}:managedsubject:${managedSubjectTestInstance.id}:edit") >> true
-    
+
     managedSubjectTestInstance.properties.each {
       if(it.value) {
         if(grailsApplication.isDomainClass(it.value.getClass()))
