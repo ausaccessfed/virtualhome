@@ -23,6 +23,7 @@ class ManagedSubjectService {
   private final String TOKEN_COUNT = 'aaf.vhr.managedsubjectservice.registerfromcsv.invalidtokens'
   private final String TOKEN_CN = 'aaf.vhr.managedsubjectservice.registerfromcsv.invalidcn'
   private final String TOKEN_EMAIL = 'aaf.vhr.managedsubjectservice.registerfromcsv.invalidemail'
+  private final String TOKEN_EMAIL_UNIQUENESS = 'aaf.vhr.managedsubjectservice.registerfromcsv.emailconflict'
   private final String TOKEN_AFFILIATION ='aaf.vhr.managedsubjectservice.registerfromcsv.invalidaffiliation'
   private final String TOKEN_EXPIRY ='aaf.vhr.managedsubjectservice.registerfromcsv.expiry'
   private final String TOKEN_LOGIN = 'aaf.vhr.managedsubjectservice.registerfromcsv.invalidlogin'
@@ -120,6 +121,8 @@ class ManagedSubjectService {
 
     def lc = 0
 
+    def reservedEmails = [:]
+
     ByteArrayInputStream is = new ByteArrayInputStream(csv)
     is.eachCsvLine { tokens ->
       lc++
@@ -129,48 +132,60 @@ class ManagedSubjectService {
         valid = false
         errors.add(messageSource.getMessage(TOKEN_COUNT, [lc] as Object[], TOKEN_COUNT, LocaleContextHolder.locale))
       } else {
+        // For some reason this causes an ArrayIndexOutOfBoundsException if we have a
+        // mismatch in the number of arguments. Which is odd, because this is a documented
+        // use case: http://groovy.codehaus.org/Multiple+Assignment
+        def (cn, email, affiliation, expiry, login, password) = tokens + [null,null]
+
         // Only if we have the correct number of tokens do we look at actual content
         // Ensure cn format
-        if(tokens[0].size() < 1 || tokens[0].count(' ') > 1) {
+        if(cn.size() < 1 || cn.count(' ') > 1) {
           valid = false
-          errors.add(messageSource.getMessage(TOKEN_CN, [lc, tokens[0]] as Object[], TOKEN_CN, LocaleContextHolder.locale))
+          errors.add(messageSource.getMessage(TOKEN_CN, [lc, cn] as Object[], TOKEN_CN, LocaleContextHolder.locale))
         }
 
         // Ensure email format
-        if(tokens[1].size() < 1 || !emailValidator.isValid(tokens[1])) {
+        if(email.size() < 1 || !emailValidator.isValid(email)) {
           valid = false
-          errors.add(messageSource.getMessage(TOKEN_EMAIL, [lc, tokens[1]] as Object[], TOKEN_EMAIL, LocaleContextHolder.locale))
+          errors.add(messageSource.getMessage(TOKEN_EMAIL, [lc, email] as Object[], TOKEN_EMAIL, LocaleContextHolder.locale))
+        }
+
+        if(reservedEmails.containsKey(email)) {
+          valid = false
+          errors.add(messageSource.getMessage(TOKEN_EMAIL_UNIQUENESS, [lc, email, reservedEmails[email]] as Object[], TOKEN_EMAIL_UNIQUENESS, LocaleContextHolder.locale))
+        } else {
+          reservedEmails[email] = lc
         }
 
         // Ensure affiliation
-        if(tokens[2].size() < 1 || !ManagedSubjectService.AFFILIATIONS.contains(tokens[2])) {
+        if(affiliation.size() < 1 || !ManagedSubjectService.AFFILIATIONS.contains(affiliation)) {
           valid = false
-          errors.add(messageSource.getMessage(TOKEN_AFFILIATION, [lc, tokens[2]] as Object[], TOKEN_AFFILIATION, LocaleContextHolder.locale))
+          errors.add(messageSource.getMessage(TOKEN_AFFILIATION, [lc, affiliation] as Object[], TOKEN_AFFILIATION, LocaleContextHolder.locale))
         }
 
         // Ensure expiry
-        if(tokens[3].size() < 1 || !tokens[3].isNumber()){
+        if(expiry.size() < 1 || !expiry.isNumber()){
           valid = false
-          errors.add(messageSource.getMessage(TOKEN_EXPIRY, [lc, tokens[2]] as Object[], TOKEN_EXPIRY, LocaleContextHolder.locale))
+          errors.add(messageSource.getMessage(TOKEN_EXPIRY, [lc, expiry] as Object[], TOKEN_EXPIRY, LocaleContextHolder.locale))
         }
 
-        if(tokens.size() == 6) {
+        if(login && password) {
           if(SecurityUtils.subject.isPermitted("app:administrator")) {
             // Ensure login
-            if(tokens[4].size() < 1){
+            if(login.size() < 1){
               valid = false
-              errors.add(messageSource.getMessage(TOKEN_LOGIN, [lc, tokens[4]] as Object[], TOKEN_LOGIN, LocaleContextHolder.locale))
+              errors.add(messageSource.getMessage(TOKEN_LOGIN, [lc, login] as Object[], TOKEN_LOGIN, LocaleContextHolder.locale))
             }
 
             // Ensure password
-            if(tokens[5].size() < 8) {
+            if(password.size() < 8) {
               valid = false
-              errors.add(messageSource.getMessage(TOKEN_PASSWORD, [lc, tokens[5]] as Object[], TOKEN_PASSWORD, LocaleContextHolder.locale))
+              errors.add(messageSource.getMessage(TOKEN_PASSWORD, [lc, password] as Object[], TOKEN_PASSWORD, LocaleContextHolder.locale))
             }
           } else {
             // for non admins report token size error so login/password functionality isn't leaked
             valid = false
-            errors.add(messageSource.getMessage(TOKEN_COUNT, [lc, tokens[0]] as Object[], TOKEN_COUNT, LocaleContextHolder.locale))
+            errors.add(messageSource.getMessage(TOKEN_COUNT, [lc, cn] as Object[], TOKEN_COUNT, LocaleContextHolder.locale))
           }
         }
       }
@@ -190,15 +205,16 @@ class ManagedSubjectService {
     lc = 0
     is = new ByteArrayInputStream(csv)
     is.eachCsvLine { tokens ->
+      def (cn, email, affiliation, expiry, login, password) = tokens + [null, null]
       lc++
 
-      def managedSubject = new ManagedSubject(cn:tokens[0], email:tokens[1], eduPersonAffiliation:tokens[2], active:false, displayName:tokens[0], eduPersonAssurance: DEFAULT_ASSURANCE, organization:group.organization, group:group)
+      def managedSubject = new ManagedSubject(cn:cn, email:email, eduPersonAffiliation:affiliation, active:false, displayName:cn, eduPersonAssurance: DEFAULT_ASSURANCE, organization:group.organization, group:group)
       sharedTokenService.generate(managedSubject)
 
-      if(tokens[3].toInteger() > 0) {
+      if(expiry.toInteger() > 0) {
         use(TimeCategory) {
           Date now = new Date()
-          managedSubject.accountExpires = now + tokens[3].toInteger().months
+          managedSubject.accountExpires = now + expiry.toInteger().months
         }
       }
 
@@ -208,9 +224,9 @@ class ManagedSubjectService {
 
       if(tokens.size() == 6) {
         managedSubject.active = true
-        managedSubject.login = tokens[4]
-        managedSubject.plainPassword = tokens[5]
-        managedSubject.plainPasswordConfirmation = tokens[5]
+        managedSubject.login = login
+        managedSubject.plainPassword = password
+        managedSubject.plainPasswordConfirmation = password
 
         if(!managedSubject.validate()) {
           valid = false

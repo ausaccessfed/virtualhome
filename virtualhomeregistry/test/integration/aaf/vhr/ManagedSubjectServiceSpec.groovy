@@ -262,11 +262,11 @@ class ManagedSubjectServiceSpec extends IntegrationSpec {
 
     where:
     expectedErrorCount | expectedLinesProcessed | csv
-    1 | 2 | "Test User,testuser@testdomain.com,staff,rubbish\nTest User,testuser@testdomain.com,staff,0"
-    1 | 2 | "Mr Test User,testuser@testdomain.com,staff,0\nTest User,testuser@testdomain.com,staff,0"
-    3 | 3 | "Test User,testuser@testdomain.com,staff,0\nMr Test User,testuser@testdomain.com,staff,rubbish\nTest User,testuser@testdomain.com,staff,"
-    3 | 3 | "Test,testuser@testdomain.com,staff,\nMr Test User,testuser@testdomain.com,staff,hello\nTest User,testuser@testdomain.com,staff,0"
-    2 | 3 | "Test User,testuser@testdomain.com,staff,rubbish\nTest User,testuser@testdomain.com,staff,0\nTest User2,testuser2@testdomain.com,staff,0,testuser2,password"
+    1 | 2 | "Test User,testuser@testdomain.com,staff,rubbish\nTest User,testuser2@testdomain.com,staff,0"
+    1 | 2 | "Mr Test User,testuser@testdomain.com,staff,0\nTest User,testuser2@testdomain.com,staff,0"
+    3 | 3 | "Test User,testuser@testdomain.com,staff,0\nMr Test User,testuser2@testdomain.com,staff,rubbish\nTest User,testuser3@testdomain.com,staff,"
+    3 | 3 | "Test,testuser@testdomain.com,staff,\nMr Test User,testuser2@testdomain.com,staff,hello\nTest User,testuser3@testdomain.com,staff,0"
+    2 | 3 | "Test User,testuser@testdomain.com,staff,rubbish\nTest User,testuser2@testdomain.com,staff,0\nTest User2,testuser3@testdomain.com,staff,0,testuser2,password"
   }
 
   def 'ensure invalid CSV lines are rejected correctly (admin rights)'() {
@@ -294,11 +294,11 @@ class ManagedSubjectServiceSpec extends IntegrationSpec {
 
     where:
     expectedErrorCount | expectedLinesProcessed | csv
-    1 | 2 | "Test User,testuser@testdomain.com,staff,rubbish,username,password\nTest User,testuser@testdomain.com,staff,0"
-    1 | 2 | "Mr Test User,testuser@testdomain.com,staff,0\nTest User,testuser@testdomain.com,staff,0"
-    3 | 3 | "Test User,testuser@testdomain.com,staff,0,password\nMr Test User2,testuser@testdomain.com,staff,rubbish,username\nTest User,testuser@testdomain.com,staff,"
-    4 | 3 | "Test,testuser@testdomain.com,staff,\nMr Test User3,testuser@testdomain.com,staff,hello,,password\nTest User,testuser@testdomain.com,staff,0"
-    1 | 3 | "Test User,testuser@testdomain.com,staff,rubbish\nTest User,testuser@testdomain.com,staff,0\nTest User2,testuser2@testdomain.com,staff,0,testuser2,password"
+    1 | 2 | "Test User,testuser@testdomain.com,staff,rubbish,username,password\nTest User,testuser2@testdomain.com,staff,0"
+    1 | 2 | "Mr Test User,testuser@testdomain.com,staff,0\nTest User,testuser2@testdomain.com,staff,0"
+    3 | 3 | "Test User,testuser@testdomain.com,staff,0,password\nMr Test User2,testuser2@testdomain.com,staff,rubbish,username\nTest User,testuser3@testdomain.com,staff,"
+    3 | 3 | "Test,testuser@testdomain.com,staff,\nMr Test User3,testuser2@testdomain.com,staff,hello,,password\nTest User,testuser3@testdomain.com,staff,0"
+    1 | 3 | "Test User,testuser@testdomain.com,staff,rubbish\nTest User,testuser2@testdomain.com,staff,0\nTest User2,testuser3@testdomain.com,staff,0,testuser2,password"
   }
 
   def 'ensure CSV lines cause account conflicts are rejected correctly'() {
@@ -323,6 +323,27 @@ class ManagedSubjectServiceSpec extends IntegrationSpec {
 
     subjects[0].hasErrors()
     !subjects[1].hasErrors()
+  }
+
+  def 'ensure CSV lines which conflict with other CSV lines are rejected correctly'() {
+    setup:
+    def o = Organization.build()
+    def g = Group.build(organization: o)
+
+    String csv = "Test User,testuser@testdomain.com,member,0\nTest User2,testuser@testdomain.com,staff,12"
+
+    expect:
+    ManagedSubject.count() == 0
+
+    when:
+    def (result, errors, subjects, linesProcessed) = managedSubjectService.registerFromCSV(g, csv.bytes)
+
+    then:
+    !result
+    errors.size() == 1
+    errors[0] =~ /email address was already used/
+    subjects == null
+    linesProcessed == 2
   }
 
   def 'ensure CSV lines for admin with invalid password are rejected correctly'() {

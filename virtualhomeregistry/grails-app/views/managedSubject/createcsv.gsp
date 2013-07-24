@@ -63,8 +63,8 @@
     <h4 class="muted">Example CSV file contents</h4>
     <pre>Jim Jones,jim@uni.edu.au,staff,0
 Lisa Jones,lisa@uni.edu.au,student,24
-Петров,Петров@uni.edu.ru,affiliate,6</pre>
-    
+Петров,petrov@uni.edu.ru,affiliate,6</pre>
+
     <br><br><br>
 
     <g:uploadForm action="savecsv" class="form form-horizontal">
