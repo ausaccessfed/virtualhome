@@ -8,10 +8,6 @@
     <ul class="breadcrumb">
       <li><g:link controller="dashboard"><g:message encodeAs='HTML' code="branding.application.name"/></g:link> <span class="divider">/</span></li>
       <li class="active"><g:message encodeAs='HTML' code="branding.nav.breadcrumb.organization"/></li>
-      
-      <aaf:hasPermission target="app:administrator">
-        <li class="pull-right"><strong><g:link action="create"><g:message encodeAs='HTML' code="branding.nav.breadcrumb.organization.create"/></g:link></strong></li>
-      </aaf:hasPermission>
     </ul>
 
     <g:render template="/templates/flash" plugin="aafApplicationBase"/>
