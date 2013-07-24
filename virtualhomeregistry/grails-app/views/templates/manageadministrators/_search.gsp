@@ -10,7 +10,7 @@
 
 <p>Invite a new administrator via email. The addresse will be sent an email containing a unique link which when clicked will give them administrative rights.</p>
 
-<g:form controller="manageAdministrators" action="invite" method="post" class="form">
+<g:form controller="manageAdministrators" action="invite" method="post" class="form" name="invite-administrative-member">
   <div class="control-group">
     <label class="control-label" for="email"><g:message encodeAs='HTML' code="label.email"/></label>
     <div class="controls">
@@ -21,7 +21,7 @@
   <g:hiddenField name="type" value="${type}" />
   <g:hiddenField name="id" value="${instance?.id}" />
 
-  <a class="invite-administrative-member btn btn-success"><g:message encodeAs='HTML' code="label.invite" /></a>
+  <button class="btn btn-success" type="submit"><g:message encodeAs='HTML' code="label.invite" /></button>
 </g:form>
 
 <hr>

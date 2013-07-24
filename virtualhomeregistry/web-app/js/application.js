@@ -45,10 +45,10 @@ $(document).on('click', '.add-administrative-member', function() {
   });
 });
 
-$(document).on('click', '.invite-administrative-member', function() {
-  aaf_base.set_button($(this));
-  var btn = $(this);
-  var form = btn.parent();
+$(document).on('submit', '#invite-administrative-member', function() {
+  var form = $(this);
+  var btn = $(':submit', this);
+  aaf_base.set_button(btn);
   $.ajax({
     type: "POST",
     cache: false,
@@ -67,6 +67,8 @@ $(document).on('click', '.invite-administrative-member', function() {
       aaf_base.popuperror();
     }
   });
+
+  return false;
 });
 
 $(document).on('click', '.remove-administrative-member', function() {
