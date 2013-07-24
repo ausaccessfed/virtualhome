@@ -27,7 +27,7 @@
   <div class="control-group ${hasErrors(bean: organizationInstance, field: 'description', 'error')}">
     <label class="control-label" for="description"><g:message encodeAs='HTML' code="label.description"/></label>
     <div class="controls">
-      <g:textArea name="description" cols="40" rows="5" maxlength="2000" value="${organizationInstance?.description}"/>
+      <g:textArea name="description" required="" cols="40" rows="5" maxlength="2000" value="${organizationInstance?.description}"/>
       <a href="#" rel="tooltip" title="${g.message(encodeAs:'HTML', code:'help.inline.aaf.vhr.organization.description')}"><i class="icon icon-question-sign"></i></a>
     </div>
   </div>
