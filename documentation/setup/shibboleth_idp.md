@@ -7,26 +7,26 @@ Before proceeding be sure to download the latest Shibboleth IdP (2.3.8 at the ti
 **Console commands as ROOT**
 
 1. If Tomcat is currently running stop it before proceeding
-1. `mkdir /opt/virtualhomeregistry/shibboleth/shibboleth-src`
-1. Extract latest shibboleth to /opt/virtualhomeregistry/shibboleth/shibboleth-src
-1. Symlink /opt/virtualhomeregistry/shibboleth/shibboleth-src/current to latest release
+1. `mkdir /opt/virtualhome/shibboleth/shibboleth-src`
+1. Extract latest shibboleth to /opt/virtualhome/shibboleth/shibboleth-src
+1. Symlink /opt/virtualhome/shibboleth/shibboleth-src/current to latest release
 	
-		ln -s /opt/virtualhomeregistry/shibboleth/shibboleth-src/shibboleth-identityprovider-2.3.8 /opt/virtualhomeregistry/shibboleth/shibboleth-src/current
+		ln -s /opt/virtualhome/shibboleth/shibboleth-src/shibboleth-identityprovider-2.3.8 /opt/virtualhome/shibboleth/shibboleth-src/current
 
 1. Set JAVA_HOME 
 
 		export JAVA_HOME=/usr/lib/jvm/jre-1.7.0-openjdk.x86_64
 
-1. Run install.sh in /opt/virtualhomeregistry/shibboleth/shibboleth-src/current
-1. When prompted set shibboleth install directory to be /opt/virtualhomeregistry/shibboleth/shibboleth-idp
-1. Copy the jars compiled and supplied by the VHR shibboleth-integration sub project to '/opt/virtualhomeregistry/shibboleth/shibboleth-src/current/lib/'
+1. Run install.sh in /opt/virtualhome/shibboleth/shibboleth-src/current
+1. When prompted set shibboleth install directory to be /opt/virtualhome/shibboleth/shibboleth-idp
+1. Copy the jars compiled and supplied by the VHR shibboleth-integration sub project to '/opt/virtualhome/shibboleth/shibboleth-src/current/lib/'
 
 		json-simple-1.1.1.jar
 		httpcore-4.2.2.jar
      	httpclient-4.2.2.jar
      	vhr-shibboleth.jar
          
-1. Edit the file `/opt/virtualhomeregistry/shibboleth/shibboleth-src/current/src/main/webapp/WEB-INF/web.xml` to contain the following (you will require the **API token** and **secret** creted when deploying the VHR webapp in the configuration below):
+1. Edit the file `/opt/virtualhome/shibboleth/shibboleth-src/current/src/main/webapp/WEB-INF/web.xml` to contain the following (you will require the **API token** and **secret** creted when deploying the VHR webapp in the configuration below):
 
        <filter>
         <filter-name>VhrFilter</filter-name>
@@ -102,7 +102,7 @@ Before proceeding be sure to download the latest Shibboleth IdP (2.3.8 at the ti
 
 1. Create an idp.xml descriptor for the Shibboleth IdP web-app as shown. Again you will require the credentials for vhr_idp database user which was previously created.
 
-		<Context docBase="/opt/virtualhomeregistry/shibboleth/shibboleth-idp/war/idp.war"
+		<Context docBase="/opt/virtualhome/shibboleth/shibboleth-idp/war/idp.war"
   			privileged="true"
   			antiResourceLocking="false"
   			antiJARLocking="false"
@@ -114,7 +114,7 @@ Before proceeding be sure to download the latest Shibboleth IdP (2.3.8 at the ti
     			auth="Container"
     			type="javax.sql.DataSource"
     			driverClassName="com.mysql.jdbc.Driver"
-    			url="jdbc:mysql://localhost:3306/virtualhomeregistry?useUnicode=yes&amp;characterEncoding=UTF-8"
+    			url="jdbc:mysql://localhost:3306/virtualhome?useUnicode=yes&amp;characterEncoding=UTF-8"
     			username="vhr_idp" 
     			password="PASSWORD"
     			maxActive="20" 
@@ -125,9 +125,9 @@ Before proceeding be sure to download the latest Shibboleth IdP (2.3.8 at the ti
 
 		</Context>
 
-1. Move the idp.xml descriptor to /opt/virtualhomeregistry/tomcat/context and symlink to Tomcat conf/Catalina/localhost directory
+1. Move the idp.xml descriptor to /opt/virtualhome/tomcat/context and symlink to Tomcat conf/Catalina/localhost directory
 
-		ln -s /opt/virtualhomeregistry/tomcat/context/idp.xml /opt/virtualhomeregistry/tomcat/apache-tomcat-7.x/conf/Catalina/localhost/idp.xml
+		ln -s /opt/virtualhome/tomcat/context/idp.xml /opt/virtualhome/tomcat/apache-tomcat-7.x/conf/Catalina/localhost/idp.xml
 
 1. Start your Tomcat instance. Ensure the IdP web application deploys correctly. If you're having troubles getting the IdP started be sure increase your logging. VHR integration logging can be increased by adding the following to Shibboleth logging.xml configuration file
 

@@ -1,19 +1,19 @@
 ## Application Setup
 
-Before proceeding be sure to have compiled the virtualhomeregistry-x.y.z.war file and copied it to your server.
+Before proceeding be sure to have compiled the virtualhome-x.y.z.war file and copied it to your server.
 
 **Console commands as ROOT**
 1. Create the application directory structure
 
-		mkdir /opt/virtualhomeregistry/application
-		cd /opt/virtualhomeregistry/application
+		mkdir /opt/virtualhome/application
+		cd /opt/virtualhome/application
 		mkdir config logs war
 		chown tomcatweb.tomcatweb logs
 		
 1. Visit the Google recaptcha service and create a new account http://www.google.com/recaptcha and keys associated with your domain.
 2. If you'd like to use SMS codes in your password reset process you'll need an account and credit with nexmo.com
 
-1. Using the example configuration file application_config.groovy.orig that ships with the project create the application configuration file as `/opt/virtualhomeregistry/application/config/application_config.groovy` - each option within the file is reasonably self documenting.
+1. Using the example configuration file application_config.groovy.orig that ships with the project create the application configuration file as `/opt/virtualhome/application/config/application_config.groovy` - each option within the file is reasonably self documenting.
 
     Here is an example of ours from the AAF test environment
     
@@ -139,10 +139,10 @@ Before proceeding be sure to have compiled the virtualhomeregistry-x.y.z.war fil
             // Logging
             log4j = {
               appenders {
-                appender new DailyRollingFileAppender(name:"app-security", layout:pattern(conversionPattern: "%d{[ dd.MM.yy HH:mm:ss.SSS]} %-5p %c %x - %m%n"), file:"/opt/virtualhomeregistry/application/logs/app-security.log", datePattern:"'.'yyyy-MM-dd")
-                appender new DailyRollingFileAppender(name:"app", layout:pattern(conversionPattern: "%d{[ dd.MM.yy HH:mm:ss.SSS]} %-5p %c %x - %m%n"), file:"/opt/virtualhomeregistry/application/logs/app.log", datePattern:"'.'yyyy-MM-dd")
-                appender new DailyRollingFileAppender(name:"app-grails", layout:pattern(conversionPattern: "%d{[ dd.MM.yy HH:mm:ss.SSS]} %-5p %c %x - %m%n"), file:"/opt/virtualhomeregistry/application/logs/app-grails.log", datePattern:"'.'yyyy-MM-dd")
-                appender new DailyRollingFileAppender(name:"stacktrace", layout:pattern(conversionPattern: "%d{[ dd.MM.yy HH:mm:ss.SSS]} %-5p %c %x - %m%n"), file:"/opt/virtualhomeregistry/application/logs/app-stacktrace.log", datePattern:"'.'yyyy-MM-dd")
+                appender new DailyRollingFileAppender(name:"app-security", layout:pattern(conversionPattern: "%d{[ dd.MM.yy HH:mm:ss.SSS]} %-5p %c %x - %m%n"), file:"/opt/virtualhome/application/logs/app-security.log", datePattern:"'.'yyyy-MM-dd")
+                appender new DailyRollingFileAppender(name:"app", layout:pattern(conversionPattern: "%d{[ dd.MM.yy HH:mm:ss.SSS]} %-5p %c %x - %m%n"), file:"/opt/virtualhome/application/logs/app.log", datePattern:"'.'yyyy-MM-dd")
+                appender new DailyRollingFileAppender(name:"app-grails", layout:pattern(conversionPattern: "%d{[ dd.MM.yy HH:mm:ss.SSS]} %-5p %c %x - %m%n"), file:"/opt/virtualhome/application/logs/app-grails.log", datePattern:"'.'yyyy-MM-dd")
+                appender new DailyRollingFileAppender(name:"stacktrace", layout:pattern(conversionPattern: "%d{[ dd.MM.yy HH:mm:ss.SSS]} %-5p %c %x - %m%n"), file:"/opt/virtualhome/application/logs/app-stacktrace.log", datePattern:"'.'yyyy-MM-dd")
               }
 
               info  'app-security'  :['grails.app.filters'], additivity: false
@@ -163,14 +163,14 @@ Before proceeding be sure to have compiled the virtualhomeregistry-x.y.z.war fil
                                       'org.codehaus.groovy.grails.plugins'], additivity: false
             }		
 
-1. Copy the virtualhomeregistry-x.y.z.war file to `/opt/virtualhomeregistry/application/war`
+1. Copy the virtualhome-x.y.z.war file to `/opt/virtualhome/application/war`
 1. Set this war file as the currently utilised version with a symlink
 
-			ln -s /opt/virtualhomeregistry/application/war/virtualhomeregistry-x.y.z.war /opt/virtualhomeregistry/application/war/current
+			ln -s /opt/virtualhome/application/war/virtualhome-x.y.z.war /opt/virtualhome/application/war/current
 			
 1. Create a ROOT.xml descriptor for the VHR webapp as shown. You will require the credentials for vhr_webapp database user which was previously created.
 
-			<Context docBase="/opt/virtualhomeregistry/application/war/current"
+			<Context docBase="/opt/virtualhome/application/war/current"
               privileged="true"
               antiResourceLocking="false"
               antiJARLocking="false"
@@ -182,7 +182,7 @@ Before proceeding be sure to have compiled the virtualhomeregistry-x.y.z.war fil
                 auth="Container"
                 type="javax.sql.DataSource"
                 driverClassName="com.mysql.jdbc.Driver"
-                url="jdbc:mysql://localhost:3306/virtualhomeregistry?useUnicode=yes&amp;characterEncoding=UTF-8"
+                url="jdbc:mysql://localhost:3306/virtualhome?useUnicode=yes&amp;characterEncoding=UTF-8"
                 username="vhr_webapp" 
                 password="PASSWORD"
                 maxActive="20" 
@@ -191,12 +191,12 @@ Before proceeding be sure to have compiled the virtualhomeregistry-x.y.z.war fil
                 validationQuery="/* ping */" 
                 testOnBorrow="true" />
 
-              <Environment name="config_dir" value="/opt/virtualhomeregistry/application/config" type="java.lang.String"/>
+              <Environment name="config_dir" value="/opt/virtualhome/application/config" type="java.lang.String"/>
 
             </Context>
 
-1. Move the ROOT.xml descriptor to /opt/virtualhomeregistry/tomcat/context and symlink to Tomcat conf/Catalina/localhost directory
+1. Move the ROOT.xml descriptor to /opt/virtualhome/tomcat/context and symlink to Tomcat conf/Catalina/localhost directory
 
-		ln -s /opt/virtualhomeregistry/tomcat/context/ROOT.xml /opt/virtualhomeregistry/tomcat/apache-tomcat-7.x/conf/Catalina/localhost/ROOT.xml
+		ln -s /opt/virtualhome/tomcat/context/ROOT.xml /opt/virtualhome/tomcat/apache-tomcat-7.x/conf/Catalina/localhost/ROOT.xml
 		
 1. Start your tomcat instance checking for any errors. You should be able to successfully navigate to https://vho.example.edu.au

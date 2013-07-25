@@ -29,11 +29,11 @@ If using an existing database you will only need a subset of the instructions pr
     mysql> SET PASSWORD FOR 'root'@'localhost' = PASSWORD('SECURE PASSWORD');
     mysql> DELETE FROM mysql.user WHERE User = '';
     mysql> FLUSH PRIVILEGES;
-    mysql> CREATE DATABASE virtualhomeregistry DEFAULT CHARACTER SET utf8 DEFAULT COLLATE utf8_general_ci;
-    mysql> grant all privileges on virtualhomeregistry.* to 'vhr_webapp'@'localhost' identified by 'PASSWORD'
-    mysql> grant all privileges on virtualhomeregistry.shibpid to 'vhr_idp'@'localhost' identified by 'PASSWORD2'
-    mysql> grant select on virtualhomeregistry.* to 'vhr_idp'@'localhost' identified by 'PASSWORD2';
-    mysql> use virtualhomeregistry;
+    mysql> CREATE DATABASE virtualhome DEFAULT CHARACTER SET utf8 DEFAULT COLLATE utf8_general_ci;
+    mysql> grant all privileges on virtualhome.* to 'vhr_webapp'@'localhost' identified by 'PASSWORD'
+    mysql> grant all privileges on virtualhome.shibpid to 'vhr_idp'@'localhost' identified by 'PASSWORD2'
+    mysql> grant select on virtualhome.* to 'vhr_idp'@'localhost' identified by 'PASSWORD2';
+    mysql> use virtualhome;
     mysql> CREATE TABLE `shibpid` (
             `creationDate` timestamp NOT NULL default CURRENT_TIMESTAMP on update CURRENT_TIMESTAMP,
             `deactivationDate` timestamp NULL default NULL,

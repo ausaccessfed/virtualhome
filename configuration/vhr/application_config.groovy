@@ -21,7 +21,7 @@ dataSource {
   dbCreate = "update"
   loggingSql = false
   
-  url = "jdbc:mysql://localhost/virtualhomeregistry?useUnicode=yes&characterEncoding=UTF-8"
+  url = "jdbc:mysql://localhost/virtualhome?useUnicode=yes&characterEncoding=UTF-8"
   username = "vhr_webapp"
   password = "password"
 }
@@ -147,10 +147,10 @@ aaf {
 // Logging
 log4j = {
   appenders {
-    appender new DailyRollingFileAppender(name:"app-security", layout:pattern(conversionPattern: "%d{[ dd.MM.yy HH:mm:ss.SSS]} %-5p %c %x - %m%n"), file:"/opt/virtualhomeregistry/application/logs/app-security.log", datePattern:"'.'yyyy-MM-dd")
-    appender new DailyRollingFileAppender(name:"app", layout:pattern(conversionPattern: "%d{[ dd.MM.yy HH:mm:ss.SSS]} %-5p %c %x - %m%n"), file:"/opt/virtualhomeregistry/application/logs/app.log", datePattern:"'.'yyyy-MM-dd")
-    appender new DailyRollingFileAppender(name:"app-grails", layout:pattern(conversionPattern: "%d{[ dd.MM.yy HH:mm:ss.SSS]} %-5p %c %x - %m%n"), file:"/opt/virtualhomeregistry/application/logs/app-grails.log", datePattern:"'.'yyyy-MM-dd")
-    appender new DailyRollingFileAppender(name:"stacktrace", layout:pattern(conversionPattern: "%d{[ dd.MM.yy HH:mm:ss.SSS]} %-5p %c %x - %m%n"), file:"/opt/virtualhomeregistry/application/logs/app-stacktrace.log", datePattern:"'.'yyyy-MM-dd")
+    appender new DailyRollingFileAppender(name:"app-security", layout:pattern(conversionPattern: "%d{[ dd.MM.yy HH:mm:ss.SSS]} %-5p %c %x - %m%n"), file:"/opt/virtualhome/application/logs/app-security.log", datePattern:"'.'yyyy-MM-dd")
+    appender new DailyRollingFileAppender(name:"app", layout:pattern(conversionPattern: "%d{[ dd.MM.yy HH:mm:ss.SSS]} %-5p %c %x - %m%n"), file:"/opt/virtualhome/application/logs/app.log", datePattern:"'.'yyyy-MM-dd")
+    appender new DailyRollingFileAppender(name:"app-grails", layout:pattern(conversionPattern: "%d{[ dd.MM.yy HH:mm:ss.SSS]} %-5p %c %x - %m%n"), file:"/opt/virtualhome/application/logs/app-grails.log", datePattern:"'.'yyyy-MM-dd")
+    appender new DailyRollingFileAppender(name:"stacktrace", layout:pattern(conversionPattern: "%d{[ dd.MM.yy HH:mm:ss.SSS]} %-5p %c %x - %m%n"), file:"/opt/virtualhome/application/logs/app-stacktrace.log", datePattern:"'.'yyyy-MM-dd")
   }
 
   info  'app-security'  :['grails.app.filters'], additivity: false

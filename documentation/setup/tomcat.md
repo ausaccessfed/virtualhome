@@ -5,9 +5,9 @@ Before proceeding be sure to download the latest Apache Tomcat 7.x from http://t
 **Console commands as ROOT**
 
 1. Create the users `tomcat` and `tomcatweb`. Both should belong to the `tomcat` group.
-1. Create the directory `/opt/virtualhomeregistry/tomcat` with ownership by root or high level system user and permissions 755.
-1. Ensure the directory `/opt/virtualhomeregistry/tomcat/context` with ownership by tomcat.tomcat and permissions 750.
-1. Copy the tomcat download to `/opt/virtualhomeregistry/tomcat`
+1. Create the directory `/opt/virtualhome/tomcat` with ownership by root or high level system user and permissions 755.
+1. Ensure the directory `/opt/virtualhome/tomcat/context` with ownership by tomcat.tomcat and permissions 750.
+1. Copy the tomcat download to `/opt/virtualhome/tomcat`
 1. Unpack
 
 		tar xzvf apache-tomcat-7.x.tar.gz
@@ -39,7 +39,7 @@ Before proceeding be sure to download the latest Apache Tomcat 7.x from http://t
 
 1. Set the current symlink
 
-		ln -s /opt/virtualhomeregistry/tomcat/apache-tomcat-7.x /opt/virtualhomeregistry/tomcat/current
+		ln -s /opt/virtualhome/tomcat/apache-tomcat-7.x /opt/virtualhome/tomcat/current
 
 1. Download the latest MySQL JDBC connector from the MySQL website
-1. Copy mysql connector jar to `/opt/virtualhomeregistry/tomcat/current/lib`
+1. Copy mysql connector jar to `/opt/virtualhome/tomcat/current/lib`

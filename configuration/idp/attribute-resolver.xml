@@ -244,7 +244,7 @@
     <resolver:Dependency ref="VHR" />
     <!-- Error using ContainerManagedConnection is this mode so we use local connection -->
     <ApplicationManagedConnection jdbcDriver="com.mysql.jdbc.Driver"
-                                   jdbcURL="jdbc:mysql://localhost:3306/virtualhomeregistry?useUnicode=yes&amp;characterEncoding=UTF-8"
+                                   jdbcURL="jdbc:mysql://localhost:3306/virtualhome?useUnicode=yes&amp;characterEncoding=UTF-8"
                                    jdbcUserName="username"
                                    jdbcPassword="password" />
   </resolver:DataConnector>

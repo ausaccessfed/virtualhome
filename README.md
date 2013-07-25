@@ -1,4 +1,4 @@
-# Virtual Home Registry
+# AAF Virtual Home
 
 ## Background
 There exists a community of researchers that are unable to take advantage of the services provided by the 

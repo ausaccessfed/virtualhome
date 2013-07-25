@@ -46,7 +46,7 @@ If any organization is **not supplied** an FR mapping all accounts linked to tha
 
 1. Terminate the web application.
 
-1. Edit your /opt/virtualhomeregistry/application/config/application_config.groovy file. **Set `bootstrap = false` to prevent public access to the VH console**.
+1. Edit your /opt/virtualhome/application/config/application_config.groovy file. **Set `bootstrap = false` to prevent public access to the VH console**.
 
 1. Restart your application and login either via the VH IdP or another IdP in your federation you use as your management account. You should have a basic VH interface and no administrative rights.
 

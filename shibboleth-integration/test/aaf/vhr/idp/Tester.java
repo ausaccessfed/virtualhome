@@ -4,7 +4,7 @@ public class Tester {
 
 	public static void main(String[] args) {
 		String apiServer = "http://brainslave.dev.bradleybeddoes.com:8181";
-		String apiEndpoint = "/virtualhomeregistry/api/v1/login/confirmsession/%s";
+		String apiEndpoint = "/virtualhome/api/v1/login/confirmsession/%s";
 		String apiToken = "bRomCePVaZMSfrCF";
 		String apiSecret = "sCzxOzYznkb2YaSW";
 		String requestingHost = "192.168.56.1";

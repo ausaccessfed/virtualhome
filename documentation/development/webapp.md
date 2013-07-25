@@ -37,17 +37,17 @@ If you're new to this space you'll want to get a few things up and running befor
 1. You'll require the following repositories to be cloned from GitHub. I'd suggest making your own fork so you can maintain your own changes seperately.
 
 		https://github.com/ausaccessfed/applicationbase
-		https://github.com/ausaccessfed/virtualhomeregistry
+		https://github.com/ausaccessfed/virtualhome
 		
 1. Assuming you clone to `~/Development/repositories` This should give you a directory structure of:
 
 		~/Development/repositories
 								   |- applicationbase
-								   |- virtualhomeregistry
+								   |- virtualhome
 								   
 1. Build your war as follows
 
-		cd ~/Development/repositories/virtualhomeregistry/virtualhomeregistry
+		cd ~/Development/repositories/virtualhome/virtualhome
 		grails compile
 		grails war
 		

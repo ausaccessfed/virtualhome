@@ -6,7 +6,7 @@ JAVA_HOME=/usr/lib/jvm/jre-1.7.0-openjdk.x86_64
 export JAVA_HOME  
 PATH=$JAVA_HOME/bin:$PATH  
 export PATH  
-CATALINA_HOME=/opt/virtualhomeregistry/tomcat/current
+CATALINA_HOME=/opt/virtualhome/tomcat/current
   
 export JAVA_OPTS="-server -Xms768m -Xmx1280m -XX:MaxPermSize=512m"
 

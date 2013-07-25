@@ -1,4 +1,4 @@
-<Context docBase="/opt/virtualhomeregistry/application/war/current"
+<Context docBase="/opt/virtualhome/application/war/current"
   privileged="true"
   antiResourceLocking="false"
   antiJARLocking="false"
@@ -10,7 +10,7 @@
     auth="Container"
     type="javax.sql.DataSource"
     driverClassName="com.mysql.jdbc.Driver"
-    url="jdbc:mysql://server:3306/virtualhomeregistry?useUnicode=yes&amp;characterEncoding=UTF-8"
+    url="jdbc:mysql://server:3306/virtualhome?useUnicode=yes&amp;characterEncoding=UTF-8"
     username="vhr_webapp" 
     password="secureme"
     maxActive="20" 
@@ -19,6 +19,6 @@
     validationQuery="/* ping */" 
     testOnBorrow="true" />
 
-  <Environment name="config_dir" value="/opt/virtualhomeregistry/application/config" type="java.lang.String"/>
+  <Environment name="config_dir" value="/opt/virtualhome/application/config" type="java.lang.String"/>
 
 </Context>

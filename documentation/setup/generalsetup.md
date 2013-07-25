@@ -9,6 +9,6 @@ The following installs Apache HTTPD 2 with SSL support and system wide OpenJDK 7
     $> yum imstall httpd.x86_64
     $> yum install mod_ssl.x86_64
     $> yum install java-1.7.0-openjdk.x86_64
-    $> mkdir /opt/virtualhomeregistry
+    $> mkdir /opt/virtualhome
 
 1. Configure and harden your Apache VirtualServer. We recommend SSL for all VH instances. A base Virtual Host example is provided in configuration/apache/vho.conf
