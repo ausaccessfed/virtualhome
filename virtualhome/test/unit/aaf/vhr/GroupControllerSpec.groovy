@@ -465,6 +465,9 @@ class GroupControllerSpec  extends spock.lang.Specification {
     o.active = true
     def groupTestInstance = Group.build(organization:o)
     shiroSubject.isPermitted("app:administrator") >> true
+    def groupRole = Role.build(name:"group:${groupTestInstance.id}:administrators")
+    def roleService = Mock(RoleService)
+    controller.roleService = roleService
 
     expect:
     Group.count() == 1
@@ -474,6 +477,8 @@ class GroupControllerSpec  extends spock.lang.Specification {
     def model = controller.delete()
 
     then:
+    1 * roleService.deleteRole(groupRole)
+
     Group.count() == 0
 
     response.redirectedUrl == "/organization/show/${o.id}#tab-groups"

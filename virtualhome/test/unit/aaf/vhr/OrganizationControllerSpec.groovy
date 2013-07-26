@@ -390,16 +390,15 @@ class OrganizationControllerSpec  extends spock.lang.Specification {
     setup:
     def organizationTestInstance = Organization.build()
     shiroSubject.isPermitted("app:administrator") >> true
-
-    expect:
-    Organization.count() == 1
+    def organizationService = Mock(OrganizationService)
+    controller.organizationService = organizationService
 
     when:
     params.id = organizationTestInstance.id
     def model = controller.delete()
 
     then:
-    Organization.count() == 0
+    1 * organizationService.delete(organizationTestInstance)
 
     response.redirectedUrl == "/organization/list"
 
@@ -412,18 +411,16 @@ class OrganizationControllerSpec  extends spock.lang.Specification {
     def organizationTestInstance = Organization.build()
     shiroSubject.isPermitted("app:administrator") >> true
 
-    Organization.metaClass.delete { throw new org.springframework.dao.DataIntegrityViolationException("Thrown from test case") }
+    def organizationService = Mock(OrganizationService)
+    controller.organizationService = organizationService
 
-    expect:
-    Organization.count() == 1
+    organizationService.delete(organizationTestInstance) >> { throw new org.springframework.dao.DataIntegrityViolationException("Thrown from test case") }
 
     when:
     params.id = organizationTestInstance.id
     def model = controller.delete()
 
     then:
-    Organization.count() == 1
-
     response.redirectedUrl == "/organization/show/${organizationTestInstance.id}"
 
     flash.type == 'error'

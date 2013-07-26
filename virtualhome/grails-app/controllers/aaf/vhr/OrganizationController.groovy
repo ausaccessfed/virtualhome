@@ -127,7 +127,7 @@ class OrganizationController {
     def organizationInstance = Organization.get(id)
     if(organizationInstance.canDelete()) {
       try {
-        organizationInstance.delete()
+        organizationService.delete(organizationInstance)
 
         log.info "Action: delete, Subject: $subject, Object: organizationInstance"
         flash.type = 'success'

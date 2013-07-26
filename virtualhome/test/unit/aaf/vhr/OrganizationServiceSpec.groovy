@@ -14,14 +14,16 @@ import aaf.base.identity.*
 class OrganizationServiceSpec extends spock.lang.Specification  {
 
   def os
+  def rs
   def wts
   def wps
 
   def setup() {
     wts = Mock(WorkflowTaskService)
     wps = new WorkflowProcessService(workflowTaskService:wts)
+    rs = Mock(RoleService)
 
-    os = new OrganizationService(grailsApplication: grailsApplication, workflowProcessService: wps)
+    os = new OrganizationService(grailsApplication: grailsApplication, workflowProcessService: wps, roleService: rs)
     grailsApplication.config.aaf.vhr.federationregistry.server = "https://manager.test.aaf.edu.au"
     grailsApplication.config.aaf.vhr.federationregistry.api.organisations = "/federationregistry/api/v1/organizations"
   }
@@ -527,6 +529,22 @@ class OrganizationServiceSpec extends spock.lang.Specification  {
     then:
     Organization.count() == 2
     Group.count() == 0
+  }
+
+  def 'expect roles to be deleted when deleting an organization'() {
+    setup:
+    def org = Organization.build()
+    def group = Group.build(organization: org)
+
+    def orgRole = Role.build(name: "organization:${org.id}:administrators")
+    def groupRole = Role.build(name: "group:${group.id}:administrators")
+
+    when:
+    os.delete(org)
+
+    then:
+    1 * rs.deleteRole(orgRole)
+    1 * rs.deleteRole(groupRole)
   }
 
 }

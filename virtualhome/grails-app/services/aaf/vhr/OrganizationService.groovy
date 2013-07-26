@@ -18,6 +18,7 @@ class OrganizationService {
   boolean transactional = true
   def grailsApplication
   def workflowProcessService
+  def roleService
 
   /*
     Connects to remote FR instance and
@@ -118,6 +119,18 @@ class OrganizationService {
     }
 
     [false, org]
+  }
+
+  public def delete(org) {
+    def role = Role.findByName("organization:${org.id}:administrators")
+    if (role) roleService.deleteRole(role)
+
+    org.groups.each { group ->
+      def groupRole = Role.findByName("group:${group.id}:administrators")
+      if (groupRole) roleService.deleteRole(groupRole)
+    }
+
+    org.delete()
   }
 
   private def queryOrganizations(server, api) {

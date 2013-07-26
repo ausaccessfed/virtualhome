@@ -13,6 +13,8 @@ class GroupController {
 
   def beforeInterceptor = [action: this.&validGroup, except: ['list', 'create', 'save']]
 
+  def roleService
+
   def list() {
     log.info "Action: list, Subject: $subject"
     [groupInstanceList: Group.list(params), groupInstanceTotal: Group.count()]
@@ -155,6 +157,9 @@ class GroupController {
     def groupInstance = Group.get(id)
     if(groupInstance.canDelete()) {
       try {
+        def groupRole = Role.findByName("group:${groupInstance.id}:administrators")
+        if (groupRole) roleService.deleteRole(groupRole)
+
         groupInstance.delete()
 
         log.info "Action: delete, Subject: $subject, Object: groupInstance"
