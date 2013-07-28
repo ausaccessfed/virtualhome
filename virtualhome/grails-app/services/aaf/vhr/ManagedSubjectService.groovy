@@ -41,7 +41,7 @@ class ManagedSubjectService {
   def finalize(ManagedSubjectInvitation invitation, String login, String plainPassword, String plainPasswordConfirmation, String mobileNumber) {
     def managedSubject = invitation.managedSubject
 
-    if(invitation.utilized || managedSubject.login != null)
+    if(invitation.utilized || managedSubject.finalized)
       return [false, messageSource.getMessage(INVITATION_INVALID, [] as Object[], INVITATION_INVALID, LocaleContextHolder.locale)]
 
     managedSubject.login = login
@@ -128,7 +128,7 @@ class ManagedSubjectService {
       lc++
 
       // Ensure required pii
-      if(tokens.size() != 4 && tokens.size() != 6) {
+      if(tokens.size() < 4 || tokens.size() > 6) {
         valid = false
         errors.add(messageSource.getMessage(TOKEN_COUNT, [lc] as Object[], TOKEN_COUNT, LocaleContextHolder.locale))
       } else {
@@ -169,16 +169,16 @@ class ManagedSubjectService {
           errors.add(messageSource.getMessage(TOKEN_EXPIRY, [lc, expiry] as Object[], TOKEN_EXPIRY, LocaleContextHolder.locale))
         }
 
-        if(login && password) {
+        if(login) {
           if(SecurityUtils.subject.isPermitted("app:administrator")) {
             // Ensure login
-            if(login.size() < 1){
+            if(login && login.size() < 1){
               valid = false
               errors.add(messageSource.getMessage(TOKEN_LOGIN, [lc, login] as Object[], TOKEN_LOGIN, LocaleContextHolder.locale))
             }
 
             // Ensure password
-            if(password.size() < 8) {
+            if(password && password.size() < 8) {
               valid = false
               errors.add(messageSource.getMessage(TOKEN_PASSWORD, [lc, password] as Object[], TOKEN_PASSWORD, LocaleContextHolder.locale))
             }
@@ -239,6 +239,8 @@ class ManagedSubjectService {
         } else {
           cryptoService.generatePasswordHash(managedSubject)
         }
+      } else if (tokens.size() == 5) {
+        managedSubject.login = login
       }
 
       subjects.add(managedSubject)
@@ -254,11 +256,11 @@ class ManagedSubjectService {
 
       log.info "Created all subjects from CSV file submitted by $subject"
       subjects.each { ms ->
-        if(!ms.login) {
+        if(!ms.hash) {
           log.info "Email account information and further instructions to $ms"
           sendConfirmation(ms)
         } else {
-          log.info "As account $ms has been provided login and password no email details where sent."
+          log.info "As account $ms has been provided password no email details where sent."
         }
       }
 

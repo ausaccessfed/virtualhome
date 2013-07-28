@@ -1,4 +1,4 @@
-<g:if test="${managedSubjectInstance.login == null}">
+<g:if test="${!managedSubjectInstance.finalized}">
   <li>
     <a href="#" onclick="$(this).next('form').submit();"><g:message encodeAs='HTML' code="views.aaf.vhr.managedsubject.show.resend.welcome"/></a>
     <g:form action="resend" method="post">

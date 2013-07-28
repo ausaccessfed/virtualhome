@@ -103,6 +103,19 @@ class FinalizationControllerSpec  extends spock.lang.Specification {
     controller.response.contentAsString == "true"
   }
 
+  def 'ensure login available returns true if username already assigned to current subject'() {
+    setup:
+    def managedSubjectTestInstance = ManagedSubject.build(login:'testusername')
+
+    when:
+    session.setAttribute(FinalizationController.MANAGED_SUBJECT_ID, managedSubjectTestInstance.id)
+    params.login = "testusername"
+    controller.loginAvailable()
+
+    then:
+    controller.response.contentAsString == "true"
+  }
+
   def 'ensure invalid invitation returns error view when completing finalization'() {
     when:
     params.inviteCode = "invalidcode"

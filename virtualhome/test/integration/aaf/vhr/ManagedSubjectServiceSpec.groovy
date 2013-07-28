@@ -59,6 +59,7 @@ class ManagedSubjectServiceSpec extends IntegrationSpec {
     ManagedSubject.count() == 1
     ManagedSubjectInvitation.count() == 1
     !ms.functioning()
+    !ms.finalized
     ms.login == null
     ms.hash == null
     o.subjects.size() == 1
@@ -76,6 +77,7 @@ class ManagedSubjectServiceSpec extends IntegrationSpec {
     managedSubject.login == 'usert'
     managedSubject.mobileNumber == '+61413123456'
     cryptoService.verifyPasswordHash('thisisalongpasswordtotest', managedSubject)
+    ms.finalized
     ms.functioning()
   }
 
@@ -492,6 +494,62 @@ class ManagedSubjectServiceSpec extends IntegrationSpec {
     where:
     expectedErrorCount | expectedLinesProcessed | csv
     0 | 2 | "Test User,testuser@testdomain.com,student,0,username,T0day123!\nTest User2,testuser2@testdomain.com,staff,12,username2,T0day456!"
+  }
+
+  def 'ensure valid CSV creates new ManagedSubject without password from each line for admins'() {
+    setup:
+    def o = Organization.build(active:true)
+    def g = Group.build(organization: o, active:true)
+    def et = new EmailTemplate(name:'registered_managed_subject', content: 'This is an email for ${managedSubject.cn} telling them to come and complete registration with code ${invitation.inviteCode}').save()
+
+    subject.permissions = []
+    subject.permissions.add(Permission.build(target:"app:administrator"))
+
+    expect:
+    ManagedSubject.count() == 0
+    o.subjects == null
+    g.subjects == null
+
+    when:
+    def (result, errors, subjects, linesProcessed) = managedSubjectService.registerFromCSV(g, csv.bytes)
+    o.refresh()
+    g.refresh()
+
+    then:
+    result
+    errors.size() == expectedErrorCount
+    linesProcessed == expectedLinesProcessed
+    subjects.size() == expectedLinesProcessed
+
+    ManagedSubject.count() == expectedLinesProcessed
+    subjects[0].cn == "Test User"
+    subjects[0].email == "testuser@testdomain.com"
+    subjects[0].eduPersonAffiliation == "student"
+    subjects[0].organization == o
+    subjects[0].group == g
+    subjects[0].accountExpires == null
+    subjects[0].login == 'username'
+    subjects[0].hash == null
+    !subjects[0].finalized
+
+    subjects[1].cn == "Test User2"
+    subjects[1].email == "testuser2@testdomain.com"
+    subjects[1].eduPersonAffiliation == "staff"
+    subjects[1].organization == o
+    subjects[1].group == g
+    subjects[1].login == 'username2'
+    subjects[1].hash == null
+    !subjects[1].finalized
+
+
+    Date now = new Date()
+    subjects[1].accountExpires.format('yyyy-MM-dd') == use(TimeCategory) {now + 12.months}.format('yyyy-MM-dd')
+
+    greenMail.getReceivedMessages().length == expectedLinesProcessed
+
+    where:
+    expectedErrorCount | expectedLinesProcessed | csv
+    0 | 2 | "Test User,testuser@testdomain.com,student,0,username\nTest User2,testuser2@testdomain.com,staff,12,username2"
   }
 
 }

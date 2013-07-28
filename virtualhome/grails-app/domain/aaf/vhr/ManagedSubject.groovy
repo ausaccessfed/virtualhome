@@ -168,6 +168,10 @@ class ManagedSubject {
     now.after(accountExpires)
   }
 
+  public boolean isFinalized() {
+    login != null && hash != null
+  }
+
   public void setResetCode(String resetCode) {
     if(resetCode)
       this.resetCode = cleanCode(resetCode)

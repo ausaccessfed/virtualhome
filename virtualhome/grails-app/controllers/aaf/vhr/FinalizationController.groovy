@@ -4,11 +4,13 @@ import groovy.time.TimeCategory
 import aaf.base.identity.SessionRecord
 
 class FinalizationController {
+  static final MANAGED_SUBJECT_ID = 'aaf.vhr.FinalizationController.MANAGED_SUBJECT_ID'
 
   def managedSubjectService
   
   def index(String inviteCode) {
     def invitationInstance = ManagedSubjectInvitation.findWhere(inviteCode:inviteCode)
+    session.setAttribute(MANAGED_SUBJECT_ID, invitationInstance?.managedSubject?.id)
 
     if(!invitationInstance) {
       log.error "no such invitation exists"
@@ -31,7 +33,7 @@ class FinalizationController {
     }
 
     def managedSubjectInstance = ManagedSubject.findWhere(login:login)
-    if(managedSubjectInstance)
+    if(managedSubjectInstance && managedSubjectInstance.id != session.getAttribute(MANAGED_SUBJECT_ID))
       render "false"
     else
       render "true"
