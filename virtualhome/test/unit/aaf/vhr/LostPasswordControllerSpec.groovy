@@ -155,24 +155,6 @@ class LostPasswordControllerSpec extends spock.lang.Specification {
     ms.resetCodeExternal == '5678'
   }
 
-  def 'obtainsubject does reset codes if requested'() {
-    setup:
-    def ms = ManagedSubject.build(login:'testuser', resetCode:'1234', resetCodeExternal:'5678')
-    ms.organization.active = true
-
-    params.login = 'testuser'
-    params.resetcodes = true
-
-    when:
-    controller.obtainsubject()
-
-    then:
-    1 * recaptchaService.verifyAnswer(_,_,_) >> true
-    response.redirectedUrl == "/lostPassword/reset"
-    ms.resetCode == null
-    ms.resetCodeExternal == null
-  }
-
   def 'reset generates email code if not present'() {
     setup:
     def ms = ManagedSubject.build()
@@ -278,6 +260,54 @@ class LostPasswordControllerSpec extends spock.lang.Specification {
     model.managedSubjectInstance == ms
     model.groupRole
     model.organizationRole
+  }
+
+  def 'resend sets resend time'() {
+    setup:
+    def ms = ManagedSubject.build(resetCode:'1234')
+    session.setAttribute(controller.CURRENT_USER, ms.id)
+    def start = new Date()
+
+    expect:
+    ms.lastCodeResend == null
+
+    when:
+    controller.resend()
+
+    then:
+    ms.lastCodeResend >= start
+  }
+
+  def 'resend sends the same codes again'() {
+    setup:
+    def ms = ManagedSubject.build(resetCode:'1234')
+    session.setAttribute(controller.CURRENT_USER, ms.id)
+    def start = new Date()
+
+    expect:
+    ms.lastCodeResend == null
+
+    when:
+    controller.resend()
+
+    then:
+    1 * emailManagerService.send(ms.email, _, _, [managedSubject:ms])
+    ms.resetCode == '1234'
+  }
+
+  def 'resend refuses to send codes again too quickly'() {
+    setup:
+    def ms = ManagedSubject.build(resetCode:'1234', lastCodeResend: new Date())
+    session.setAttribute(controller.CURRENT_USER, ms.id)
+
+    when:
+    controller.resend()
+
+    then:
+    0 * emailManagerService._
+    flash.type == 'error'
+    flash.message =~ /too quickly/
+    response.status == 302
   }
 
   def 'validatereset increases failure count it resetCodes do not match'() {

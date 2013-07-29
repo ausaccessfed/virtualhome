@@ -30,6 +30,9 @@ class ManagedSubject {
   String resetCode
   String resetCodeExternal
 
+  // Last time the password reset codes were resent to the user. Used for throttling.
+  Date lastCodeResend
+
   Date accountExpires         
 
   // AAF Core
@@ -77,6 +80,8 @@ class ManagedSubject {
     
     resetCode nullable:true
     resetCodeExternal nullable:true
+
+    lastCodeResend nullable:true
 
     apiKey nullable:true, unique:true
     eptidKey nullable:true, unique:true

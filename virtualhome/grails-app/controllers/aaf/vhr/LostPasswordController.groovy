@@ -1,5 +1,6 @@
 package aaf.vhr
 
+import groovy.time.TimeCategory
 import org.springframework.context.i18n.LocaleContextHolder
 
 import aaf.base.identity.Role
@@ -56,21 +57,6 @@ class LostPasswordController {
       return
     }
 
-    // Restart codes if user requests
-    if(params.resetcodes) {
-      managedSubjectInstance.resetCode = null
-      managedSubjectInstance.resetCodeExternal = null
-
-      if(!managedSubjectInstance.save()) {
-        log.error "Unable to save $managedSubjectInstance when resetting password codes"
-        managedSubjectInstance.errors.each {
-          log.error it
-        }
-        redirect action: 'unavailable'
-        return
-      }
-    }
-
     redirect action: 'reset'
   }
 
@@ -78,27 +64,39 @@ class LostPasswordController {
     def managedSubjectInstance = ManagedSubject.get(session.getAttribute(CURRENT_USER))
 
     if(managedSubjectInstance.resetCode == null || managedSubjectInstance.resetCodeExternal == null) {
-      // Email reset code
       managedSubjectInstance.resetCode = aaf.vhr.crypto.CryptoUtil.randomAlphanumeric(grailsApplication.config.aaf.vhr.passwordreset.reset_code_length)
-      def emailSubject = messageSource.getMessage(EMAIL_CODE_SUBJECT, [] as Object[], EMAIL_CODE_SUBJECT, LocaleContextHolder.locale)
-      def emailTemplate = EmailTemplate.findWhere(name:"email_password_code")
-      emailManagerService.send(managedSubjectInstance.email, emailSubject, emailTemplate, [managedSubject:managedSubjectInstance]) 
-
-      if(grailsApplication.config.aaf.vhr.passwordreset.second_factor_required) {
-        // SMS reset code (UI asks to contact admin if no mobile)
-        if(managedSubjectInstance.mobileNumber) {
-          if(!sendsms(managedSubjectInstance)) {
-            redirect action: 'unavailable'
-            return
-          }
-        }
+      if(grailsApplication.config.aaf.vhr.passwordreset.second_factor_required && managedSubjectInstance.mobileNumber) {
+        managedSubjectInstance.resetCodeExternal = aaf.vhr.crypto.CryptoUtil.randomAlphanumeric(grailsApplication.config.aaf.vhr.passwordreset.reset_code_length)
       }
+      sendResetCodes(managedSubjectInstance)
     }
 
     def groupRole = Role.findWhere(name:"group:${managedSubjectInstance.group.id}:administrators")
     def organizationRole = Role.findWhere(name:"organization:${managedSubjectInstance.organization.id}:administrators")
 
-    [managedSubjectInstance:managedSubjectInstance, groupRole:groupRole, organizationRole:organizationRole]
+    [managedSubjectInstance:managedSubjectInstance, groupRole:groupRole, organizationRole:organizationRole, allowResend:true]
+  }
+
+  def resend() {
+    def managedSubjectInstance = ManagedSubject.get(session.getAttribute(CURRENT_USER))
+
+    use(TimeCategory) {
+      def t = managedSubjectInstance.lastCodeResend
+      if (t && t > 4.minutes.ago) {
+        flash.type = 'error'
+        flash.message = 'controllers.aaf.vhr.lostpassword.resend.error'
+      } else {
+        sendResetCodes(managedSubjectInstance)
+
+        managedSubjectInstance.lastCodeResend = new Date()
+        managedSubjectInstance.save()
+
+        flash.type = 'info'
+        flash.message = 'controllers.aaf.vhr.lostpassword.resend.success'
+      }
+    }
+
+    redirect action: 'reset'
   }
 
   def validatereset() {
@@ -213,10 +211,25 @@ Remote IP: ${request.getRemoteAddr()}"""
     true
   }
 
+  private void sendResetCodes(ManagedSubject managedSubjectInstance) {
+    // Email reset code
+    def emailSubject = messageSource.getMessage(EMAIL_CODE_SUBJECT, [] as Object[], EMAIL_CODE_SUBJECT, LocaleContextHolder.locale)
+    def emailTemplate = EmailTemplate.findWhere(name:"email_password_code")
+    emailManagerService.send(managedSubjectInstance.email, emailSubject, emailTemplate, [managedSubject:managedSubjectInstance])
+
+    if(grailsApplication.config.aaf.vhr.passwordreset.second_factor_required) {
+      // SMS reset code (UI asks to contact admin if no mobile)
+      if(managedSubjectInstance.mobileNumber) {
+        if(!sendsms(managedSubjectInstance)) {
+          redirect action: 'unavailable'
+          return
+        }
+      }
+    }
+  }
+
   private boolean sendsms(ManagedSubject managedSubjectInstance) {
     def config = grailsApplication.config.aaf.vhr.passwordreset
-
-    managedSubjectInstance.resetCodeExternal = aaf.vhr.crypto.CryptoUtil.randomAlphanumeric(config.reset_code_length)
 
     String mobileNumber = managedSubjectInstance.mobileNumber
     String text = config.reset_sms_text.replace('{0}', managedSubjectInstance.resetCodeExternal)

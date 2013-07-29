@@ -9,6 +9,7 @@ import test.shared.ShiroEnvironment
 
 @TestFor(aaf.vhr.Group)
 @Build([aaf.vhr.Group, aaf.vhr.ManagedSubject, aaf.vhr.Organization])
+@Mock([Group, Organization])
 class GroupSpec extends spock.lang.Specification  {
 
   @Shared def shiroEnvironment = new ShiroEnvironment()

@@ -5,11 +5,23 @@
     <r:require modules="pwmask" />
   </head>
   <body>
+    <h2>Password reset for <g:fieldValue bean="${managedSubjectInstance}" field="cn"/></h2>
 
-    <h2>Password reset for <g:fieldValue bean="${managedSubjectInstance}" field="cn"/> <small>Please provide the information requested below</small></h2>
+    <div class="row">
+      <div class="span12">
+        <g:if test="${allowResend}">
+          <p>
+            <g:message code="views.aaf.vhr.lostpassword.reset.resend.info"/>
+            <g:link action="resend"><g:message code="views.aaf.vhr.lostpassword.reset.resend.link" encodeAs="HTML"/></g:link>
+          </p>
+        </g:if>
+      </div>
+    </div>
 
     <g:render template="/templates/flash" plugin="aafApplicationBase"/>
     <g:render template="/templates/errors_bean" model="['bean':managedSubjectInstance]" plugin="aafApplicationBase"/>
+
+    <hr>
 
     <g:form action="validatereset" class="form-horizontal myaccount" name="accountform" id="accountform">
 
