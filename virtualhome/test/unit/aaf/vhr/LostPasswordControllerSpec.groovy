@@ -17,6 +17,7 @@ class LostPasswordControllerSpec extends spock.lang.Specification {
   def passwordValidationService
   def cryptoService
   def emailManagerService
+  def smsDeliveryService
 
   def setup() {
     recaptchaService = Mock(com.megatome.grails.RecaptchaService)
@@ -30,6 +31,9 @@ class LostPasswordControllerSpec extends spock.lang.Specification {
 
     emailManagerService = Mock(aaf.base.EmailManagerService)
     controller.emailManagerService = emailManagerService
+
+    smsDeliveryService = Mock(aaf.base.SMSDeliveryService)
+    controller.smsDeliveryService = smsDeliveryService
   }
 
   def 'validManagedSubjectInstance errors if no managedsubject in session'() {
@@ -202,6 +206,7 @@ class LostPasswordControllerSpec extends spock.lang.Specification {
 
     grailsApplication.config.aaf.vhr.passwordreset.second_factor_required = true
     grailsApplication.config.aaf.vhr.passwordreset.reset_code_length = 6
+    grailsApplication.config.aaf.vhr.passwordreset.reset_sms_text = '{0}'
 
     Role.build(name:"group:${ms.group.id}:administrators")
     Role.build(name:"organization:${ms.organization.id}:administrators")
@@ -214,8 +219,8 @@ class LostPasswordControllerSpec extends spock.lang.Specification {
 
     then:
     1 * emailManagerService.send(ms.email, _, _, [managedSubject:ms])
+    0 * smsDeliveryService.send(_,_)
     ms.resetCode.length() == 6
-    ms.resetCodeExternal == null
 
     model.managedSubjectInstance == ms
     model.groupRole
@@ -230,8 +235,6 @@ class LostPasswordControllerSpec extends spock.lang.Specification {
     grailsApplication.config.aaf.vhr.passwordreset.second_factor_required = true
     grailsApplication.config.aaf.vhr.passwordreset.reset_code_length = 6
 
-    controller.metaClass.sendsms = {ManagedSubject ms2 -> ms2.resetCodeExternal = aaf.vhr.crypto.CryptoUtil.randomAlphanumeric(6); false}
-
     expect:
     ms.resetCode == null
     ms.resetCodeExternal == null
@@ -241,6 +244,7 @@ class LostPasswordControllerSpec extends spock.lang.Specification {
 
     then:
     1 * emailManagerService.send(ms.email, _, _, [managedSubject:ms])
+    1 * smsDeliveryService.send(_,_) >> false
     ms.resetCode.length() == 6
     ms.resetCodeExternal.length() == 6
 
@@ -255,8 +259,6 @@ class LostPasswordControllerSpec extends spock.lang.Specification {
     grailsApplication.config.aaf.vhr.passwordreset.second_factor_required = true
     grailsApplication.config.aaf.vhr.passwordreset.reset_code_length = 6
 
-    controller.metaClass.sendsms = {ManagedSubject ms2 -> ms2.resetCodeExternal = aaf.vhr.crypto.CryptoUtil.randomAlphanumeric(6); true}
-
     Role.build(name:"group:${ms.group.id}:administrators")
     Role.build(name:"organization:${ms.organization.id}:administrators")
 
@@ -269,6 +271,7 @@ class LostPasswordControllerSpec extends spock.lang.Specification {
 
     then:
     1 * emailManagerService.send(ms.email, _, _, [managedSubject:ms])
+    1 * smsDeliveryService.send(ms.mobileNumber, _ as String) >> true
     ms.resetCode.length() == 6
     ms.resetCodeExternal.length() == 6
 

@@ -76,10 +76,6 @@ aaf {
       reset_code_length = 6
       reset_sms_text = "Your VHR 'SMS Code' to reset your lost password is: {0}"
       reset_attempt_limit = 5
-
-      api_endpoint = 'https://rest.nexmo.com'
-      api_key = ''
-      api_secret = ''
     }
     login {
       ssl_only_cookie = false
@@ -98,6 +94,14 @@ aaf {
 
     // Deployed AAF environment [development | test | production]
     deployment_environment = "development"
+
+    sms {
+      api_endpoint = 'https://rest.nexmo.com'
+      api_key = ''
+      api_secret = ''
+
+      fake = false   // Deliver via aaf.base.FakeSMSDeliveryController to GreenMail
+    }
 
     realms {
       api {

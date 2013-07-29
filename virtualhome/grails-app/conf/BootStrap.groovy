@@ -16,7 +16,12 @@ class BootStrap {
   def workflowProcessService
 
     def init = { servletContext ->
-    
+      // TODO: Remove this next major release
+      if (!grailsApplication.config.aaf.base.sms.api_endpoint) {
+        // Backward compatibility of configuration
+        grailsApplication.config.aaf.base.sms = grailsApplication.config.aaf.vhr.passwordreset
+      }
+
       if(Environment.current != Environment.TEST) {
 
         def subject = aaf.base.identity.Subject.findWhere(principal:"aaf.base.identity:internal_account")

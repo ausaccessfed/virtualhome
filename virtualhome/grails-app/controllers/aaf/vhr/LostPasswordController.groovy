@@ -1,8 +1,5 @@
 package aaf.vhr
 
-import groovyx.net.http.*
-import static groovyx.net.http.ContentType.*
-import static groovyx.net.http.Method.*
 import org.springframework.context.i18n.LocaleContextHolder
 
 import aaf.base.identity.Role
@@ -21,6 +18,7 @@ class LostPasswordController {
   def passwordValidationService
   def cryptoService
   def emailManagerService
+  def smsDeliveryService
 
   def beforeInterceptor = [action: this.&validManagedSubjectInstance, except: ['start', 'obtainsubject', 'complete', 'unavailable', 'locked']]
 
@@ -216,32 +214,13 @@ Remote IP: ${request.getRemoteAddr()}"""
   }
 
   private boolean sendsms(ManagedSubject managedSubjectInstance) {
-    def passwordreset = grailsApplication.config.aaf.vhr.passwordreset
+    def config = grailsApplication.config.aaf.vhr.passwordreset
 
-    managedSubjectInstance.resetCodeExternal = aaf.vhr.crypto.CryptoUtil.randomAlphanumeric(passwordreset.reset_code_length)
+    managedSubjectInstance.resetCodeExternal = aaf.vhr.crypto.CryptoUtil.randomAlphanumeric(config.reset_code_length)
 
-    String text = grailsApplication.config.aaf.vhr.passwordreset.reset_sms_text.replace('{0}', managedSubjectInstance.resetCodeExternal)
     String mobileNumber = managedSubjectInstance.mobileNumber
-
-    boolean outcome = true
-    def http = new HTTPBuilder( passwordreset.api_endpoint  )
-    http.request( GET, JSON ) {
-      uri.path = '/sms/json'
-      uri.query = [api_key: passwordreset.api_key, api_secret:passwordreset.api_secret, from:'AAF', to:mobileNumber, type:'text', text:text]
-
-      response.success = { resp, json ->
-        log.debug resp.statusLine
-        log.info "Sent SMS to $managedSubjectInstance with successful response of ${json.messages}"
-        outcome = true
-
-      }
-
-      response.failure = { resp ->
-        log.error "Sent SMS to $managedSubjectInstance with failure response of ${resp.statusLine.statusCode} : ${resp.statusLine.reasonPhrase}"
-      }
-    }
-    
-    outcome
+    String text = config.reset_sms_text.replace('{0}', managedSubjectInstance.resetCodeExternal)
+    smsDeliveryService.send(mobileNumber, text)
   }
 
 }
