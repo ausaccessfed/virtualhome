@@ -11,7 +11,9 @@
       </div>
       <div class="span6">
         <div class="pull-right">
-          <g:link action="changepassword" class="btn btn-info btn-large">Change your password</g:link>
+          <g:link action="changedetails" class="btn btn-info btn-large">
+            <g:message code="views.aaf.vhr.account.show.changedetails" encodeAs="HTML"/>
+          </g:link>
         </div>
       </div>
     </div>
@@ -135,7 +137,7 @@
     </div>
 
     <h3 class="muted">Assistance with your account</h3>
-    <p>You can <g:link action="changepassword">change your password</g:link> using this website.</p>
+    <p>You can <g:link action="changedetails">change your password</g:link> using this website.</p>
     <p>For all other queries relating to your account please contact one of the administrators of your account as shown below.</p>
 
     <g:render template="/templates/accountadministrators"/>

@@ -47,13 +47,13 @@ class UrlMappings {
       controller="account"
       action="show"
     }
-    "/myaccount/changepassword" {
+    "/myaccount/changedetails" {
       controller="account"
-      action="changepassword"
+      action="changedetails"
     }
-    "/myaccount/completepasswordchange" {
+    "/myaccount/completedetailschange" {
       controller="account"
-      action="completepasswordchange"
+      action="completedetailschange"
     }
     "/lostpassword/$action" {
       controller="lostPassword"

@@ -96,38 +96,38 @@ class AccountControllerSpec extends spock.lang.Specification {
     model.managedSubjectInstance == managedSubjectTestInstance
   }
 
-  def 'changepassword with no existing login requires login'() {
+  def 'changedetails with no existing login requires login'() {
     when:
-    controller.changepassword()
+    controller.changedetails()
 
     then:
     flash.type == 'info'
-    flash.message == 'controllers.aaf.vhr.account.changepassword.requireslogin'
+    flash.message == 'controllers.aaf.vhr.account.changedetails.requireslogin'
     response.redirectedUrl == '/account/index'
   }
 
-  def 'changepassword with existing login succeeds'() {
+  def 'changedetails with existing login succeeds'() {
     setup:
     def managedSubjectTestInstance = ManagedSubject.build(login:'validlogin')
     session.setAttribute(controller.CURRENT_USER, managedSubjectTestInstance.id)
 
     when:
-    def model = controller.changepassword()
+    def model = controller.changedetails()
 
     then:
     response.status == 200
     model.managedSubjectInstance == managedSubjectTestInstance
   }
 
-  def 'completepasswordchange with no existing login requires login'() {
+  def 'completedetailschange with no existing login requires login'() {
     when:
-    controller.completepasswordchange()
+    controller.completedetailschange()
 
     then:
     response.status == 403
   }
 
-  def 'completepasswordchange with existing login but wrong password fails'() {
+  def 'completedetailschange with existing login but wrong password fails'() {
     setup:
     def cryptoService = Mock(aaf.vhr.CryptoService)
 
@@ -138,18 +138,18 @@ class AccountControllerSpec extends spock.lang.Specification {
     controller.cryptoService = cryptoService
 
     when:
-    controller.completepasswordchange()
+    controller.completedetailschange()
 
     then:
     1 * cryptoService.verifyPasswordHash(_ as String, _ as ManagedSubject) >>> false
     
     flash.type == 'error'
-    flash.message == 'controllers.aaf.vhr.account.completepasswordchange.password.error'
-    view == '/account/changepassword'
+    flash.message == 'controllers.aaf.vhr.account.completedetailschange.password.error'
+    view == '/account/changedetails'
     model.managedSubjectInstance == managedSubjectTestInstance
   }
 
-  def 'completepasswordchange with existing login, correct current password but invalid new password fails'() {
+  def 'completedetailschange with existing login, correct current password but invalid new password fails'() {
     setup:
     def cryptoService = Mock(aaf.vhr.CryptoService)
     def passwordValidationService = Mock(aaf.vhr.PasswordValidationService)
@@ -165,19 +165,19 @@ class AccountControllerSpec extends spock.lang.Specification {
     controller.cryptoService = cryptoService
 
     when:
-    controller.completepasswordchange()
+    controller.completedetailschange()
 
     then:
     1 * cryptoService.verifyPasswordHash(_ as String, _ as ManagedSubject) >>> true
     1 * passwordValidationService.validate(_ as ManagedSubject) >>> [[false, ['some.error', 'some.other.error']]]
     
     flash.type == 'error'
-    flash.message == 'controllers.aaf.vhr.account.completepasswordchange.new.password.invalid'
-    view == '/account/changepassword'
+    flash.message == 'controllers.aaf.vhr.account.completedetailschange.password.invalid'
+    view == '/account/changedetails'
     model.managedSubjectInstance == managedSubjectTestInstance
   }
 
-  def 'completepasswordchange with existing login, correct current password and valid new password succeeds'() {
+  def 'completedetailschange with existing login, correct current password and valid new password succeeds'() {
     setup:
     def cryptoService = Mock(aaf.vhr.CryptoService)
     def passwordValidationService = Mock(aaf.vhr.PasswordValidationService)
@@ -193,7 +193,7 @@ class AccountControllerSpec extends spock.lang.Specification {
     controller.passwordValidationService = passwordValidationService
 
     when:
-    controller.completepasswordchange()
+    controller.completedetailschange()
 
     then:
     1 * cryptoService.verifyPasswordHash(_ as String, _ as ManagedSubject) >>> true
@@ -201,8 +201,30 @@ class AccountControllerSpec extends spock.lang.Specification {
     1 * passwordValidationService.validate(_ as ManagedSubject) >>> [[true, []]]
     
     flash.type == 'success'
-    flash.message == 'controllers.aaf.vhr.account.completepasswordchange.new.password.success'
+    flash.message == 'controllers.aaf.vhr.account.completedetailschange.success'
     response.redirectedUrl == '/account/show'
+  }
+
+  def 'completedetailschange updates mobile number when valid'() {
+    setup:
+    def cryptoService = Mock(aaf.vhr.CryptoService)
+    controller.cryptoService = cryptoService
+
+    def managedSubjectTestInstance = ManagedSubject.build(login: 'validlogin', mobileNumber: '+61487654321')
+    session.setAttribute(controller.CURRENT_USER, managedSubjectTestInstance.id)
+
+    when:
+    params.currentPassword = 'password'
+    params.mobileNumber = '+61412345678'
+    controller.completedetailschange()
+
+    then:
+    1 * cryptoService.verifyPasswordHash(_, _) >> true
+
+    flash.type == 'success'
+    flash.message == 'controllers.aaf.vhr.account.completedetailschange.success'
+
+    managedSubjectTestInstance.mobileNumber == '+61412345678'
   }
 
 }

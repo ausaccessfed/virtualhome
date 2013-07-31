@@ -53,7 +53,7 @@
       
       <hr>
 
-      <g:render template="/templates/passwordinput"/>
+      <g:render template="/templates/passwordinput" model="[newPasswordRequired: true]"/>
 
       <div class="control-group">
           <label class="control-label" for="plainPasswordConfirmation">Mobile Number</label>

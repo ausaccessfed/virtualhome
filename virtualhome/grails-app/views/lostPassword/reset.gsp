@@ -78,7 +78,7 @@
         </g:if>
       <hr>
 
-      <g:render template="/templates/passwordinput"/>
+      <g:render template="/templates/passwordinput" model="[newPasswordRequired: true]"/>
 
       <div class="form-actions">
         <button type="submit" class="btn btn-success btn-large">Reset Password</button>

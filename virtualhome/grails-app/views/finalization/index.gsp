@@ -44,7 +44,7 @@
 
         <hr>
 
-        <g:render template="/templates/passwordinput"/>
+        <g:render template="/templates/passwordinput" model="[newPasswordRequired: true]"/>
 
         <hr>
 

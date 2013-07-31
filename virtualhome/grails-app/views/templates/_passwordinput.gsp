@@ -1,43 +1,43 @@
 <div class="control-group">
-  <label class="control-label" for="plainPassword">New Password</label>
+  <label class="control-label" for="plainPassword">
+    <g:message code="templates.aaf.vhr.passwordinput.password.label" encodeAs="HTML"/>
+  </label>
   <div class="controls">
     <div class="span5">
-      <input class="span5 required" id="plainPassword" name="plainPassword" type="password" autocomplete="off" data-typetoggle="#showpassword">
-      <input id="showpassword" type="checkbox" tabindex="-1"/> <span>unmask</span>
-      <p class="lead" style="margin-top:12px; margin-bottom: 6px;">Your password is <strong id="pwlength">0</strong> characters long</p>
+      <g:if test="${newPasswordRequired}">
+        <input class="span5 required" id="plainPassword" name="plainPassword" type="password" autocomplete="off" data-typetoggle="#showpassword">
+      </g:if>
+      <g:else>
+        <input class="span5" id="plainPassword" name="plainPassword" type="password" autocomplete="off" data-typetoggle="#showpassword">
+      </g:else>
+      <input id="showpassword" type="checkbox" tabindex="-1"/> <span><g:message code="templates.aaf.vhr.passwordinput.password.unmask"/></span>
+      <p class="lead" style="margin-top:12px; margin-bottom: 6px;">
+        <g:message code="templates.aaf.vhr.passwordinput.password.help" args="${['<strong id="pwlength">0</strong>']}" encodeAs="none"/>
+      </p>
     </div>
     <div class="span4">
       <div class="help-block pulse-target">
-        <p>The AAF has strict password requirements in order to meet international security standard NIST 800-63.</p>
-
-        <p>The AAF <a href="http://xkcd.com/936/" target="_blank" tabindex="-1">and others</a> recommend you use a password/passphrase of <strong>greater than 16 characters</strong>. A phrase unique to you is the easiest way to achieve this: e.g. <em>'I backed Horse 46 in the Melbourne cup!' or 'ilovedvisitingIcelandin2012'</em>.</p>
-
-        <p>Often a longer passphrase is actually easier to remember then a password with fewer characters but stricter requirements like the ones below.</p>
-
-        <p>If you wish to use a password of less than 16 characters in length the following requirements <strong>apply</strong>:</p>
-        <ul>
-          <li>Minimum <strong>length of 8 characters</strong>;</li>
-          <li>Does not contain your username;</li>
-          <li>At least 1 number;</li>
-          <li>At least 1 symbol e.g. !,@,$ etc;</li>
-          <li>At least 1 uppercase character;</li>
-          <li>At least 1 lowercase chatacter;</li>
-          <li>No dictionary words;</li>
-          <li>No whitespace;</li>
-        </ul>
+        <g:message code="templates.aaf.vhr.passwordinput.password.requirements"/>
       </div>
     </div>
   </div>
 </div>
 
 <div class="control-group">
-  <label class="control-label" for="plainPasswordConfirmation">Confirm New Password</label>
+  <label class="control-label" for="plainPasswordConfirmation">
+    <g:message code="templates.aaf.vhr.passwordinput.passwordconfirmation.label"/>
+  </label>
   <div class="controls">
     <div class="span5">
-      <input class="span5 required" name="plainPasswordConfirmation" id="plainPasswordConfirmation" type="password" autocomplete="off" data-typetoggle="#showpassword">
+      <g:if test="${required}">
+        <input class="span5 required" name="plainPasswordConfirmation" id="plainPasswordConfirmation" type="password" autocomplete="off" data-typetoggle="#showpassword">
+      </g:if>
+      <g:else>
+        <input class="span5" name="plainPasswordConfirmation" id="plainPasswordConfirmation" type="password" autocomplete="off" data-typetoggle="#showpassword">
+      </g:else>
     </div>
     <div class="span4">
-      <span class="help-block">Please re-type your password so we can make sure you didn't make a mistake</span>
+      <span class="help-block"><g:message code="templates.aaf.vhr.passwordinput.passwordconfirmation.help"/></span>
     </div>
   </div>
 </div>
