@@ -380,6 +380,18 @@ class ManagedSubjectSpec extends spock.lang.Specification  {
     s.resetCodeExternal == 'abciLo9'
   }
 
+  def 'ensure resetCode cannot equal resetCodeExternal'() {
+    setup:
+    def s = ManagedSubject.build()
+
+    when:
+    s.resetCode = '123456'
+    s.resetCodeExternal = '123456'
+
+    then:
+    !s.validate()
+  }
+
   def 'ensure accounts are correctly locked'() {
     setup:
     def s = ManagedSubject.build()

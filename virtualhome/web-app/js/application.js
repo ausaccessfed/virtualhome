@@ -94,3 +94,13 @@ $(document).on('click', '.remove-administrative-member', function() {
     }
   });
 });
+
+jQuery(function($) {
+  $.validator.addMethod("notEqual", function(value, element, param) {
+    return value != $(param).val();
+  }, "This must be a different value");
+
+  $.validator.addClassRules("resetCodeExternal", {
+    notEqual: '#resetCode'
+  });
+});

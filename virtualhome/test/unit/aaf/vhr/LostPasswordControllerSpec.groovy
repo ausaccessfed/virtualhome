@@ -59,7 +59,7 @@ class LostPasswordControllerSpec extends spock.lang.Specification {
 
     then:
     !result
-    response.redirectedUrl == "/lostPassword/locked"
+    response.redirectedUrl == "/lostPassword/support"
   }
 
   def 'validManagedSubjectInstance errors if managedsubject in session has met failed attempts amount'() {
@@ -78,7 +78,7 @@ class LostPasswordControllerSpec extends spock.lang.Specification {
     ms.stateChanges.size() == 1
     ms.stateChanges.toArray()[0].reason == "Locked by forgotten password process due to many failed login attempts"
 
-    response.redirectedUrl == "/lostPassword/locked"
+    response.redirectedUrl == "/lostPassword/support"
   }
 
   def 'validManagedSubjectInstance succeeds if valid managedsubject in session'() {
@@ -135,7 +135,21 @@ class LostPasswordControllerSpec extends spock.lang.Specification {
 
     then:
     1 * recaptchaService.verifyAnswer(_,_,_) >> true
-    response.redirectedUrl == "/lostPassword/locked"
+    response.redirectedUrl == "/lostPassword/support"
+  }
+
+  def 'obtainsubject errors if account has not been finalized'() {
+    setup:
+    def ms = ManagedSubject.build(login:'testuser2')
+    ms.hash = null
+    params.login = 'testuser2'
+
+    when:
+    controller.obtainsubject()
+
+    then:
+    1 * recaptchaService.verifyAnswer(_,_,_) >> true
+    response.redirectedUrl == "/lostPassword/support"
   }
 
   def 'obtainsubject does not reset codes if not requested'() {
@@ -207,6 +221,31 @@ class LostPasswordControllerSpec extends spock.lang.Specification {
     model.managedSubjectInstance == ms
     model.groupRole
     model.organizationRole
+  }
+
+  def 'reset does not resend email if no mobileNumber and no externalcode'() {
+    setup:
+    def ms = ManagedSubject.build(resetCode: '123456')
+    session.setAttribute(controller.CURRENT_USER, ms.id)
+
+    grailsApplication.config.aaf.vhr.passwordreset.second_factor_required = true
+    grailsApplication.config.aaf.vhr.passwordreset.reset_code_length = 6
+    grailsApplication.config.aaf.vhr.passwordreset.reset_sms_text = '{0}'
+
+    Role.build(name:"group:${ms.group.id}:administrators")
+    Role.build(name:"organization:${ms.organization.id}:administrators")
+
+    expect:
+    ms.resetCode != null
+    ms.resetCodeExternal == null
+    ms.mobileNumber == null
+
+    when:
+    def model = controller.reset()
+
+    then:
+    0 * emailManagerService.send(ms.email, _, _, [managedSubject:ms])
+    0 * smsDeliveryService.send(_,_)
   }
 
   def 'reset does send sms if mobileNumber but redirects to unavailable on fault'() {
@@ -450,15 +489,15 @@ class LostPasswordControllerSpec extends spock.lang.Specification {
     response.redirectedUrl == "/lostPassword/complete"
   }
 
-  def 'ensure locked reverts to start if no session object'() {
+  def 'ensure support reverts to start if no session object'() {
     when:
-    controller.locked()
+    controller.support()
 
     then:
     response.redirectedUrl == "/lostPassword/start"
   }
 
-  def 'ensure correct functioning of locked'() {
+  def 'ensure correct functioning of support'() {
     setup:
     def ms = ManagedSubject.build(failedResets:1, resetCode:'1234', resetCodeExternal:'5678')
     session.setAttribute(controller.CURRENT_USER, ms.id)
@@ -467,7 +506,7 @@ class LostPasswordControllerSpec extends spock.lang.Specification {
     def or = Role.build(name:"organization:${ms.organization.id}:administrators")
 
     when:
-    def model = controller.locked()
+    def model = controller.support()
 
     then:
     model.managedSubjectInstance == ms

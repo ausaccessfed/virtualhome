@@ -79,7 +79,9 @@ class ManagedSubject {
     hash nullable:true, blank:false, minSize:60, maxSize:60
     
     resetCode nullable:true
-    resetCodeExternal nullable:true
+    resetCodeExternal nullable:true, validator: {val, obj ->
+      val == null || val != obj.resetCode
+    }
 
     lastCodeResend nullable:true
 
