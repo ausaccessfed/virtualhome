@@ -1,5 +1,11 @@
 apply plugin: 'java'
 
+def vhProperties = new Properties()
+vhProperties.load(file('../virtualhome/application.properties').newInputStream())
+
+version = vhProperties.get('app.version')
+archivesBaseName = 'vh-shib-integration'
+
 sourceSets {
   main {
     java {
