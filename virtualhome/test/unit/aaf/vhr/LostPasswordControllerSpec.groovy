@@ -13,16 +13,12 @@ import aaf.base.identity.*
 @Mock([Organization, Group, StateChange])
 class LostPasswordControllerSpec extends spock.lang.Specification {
 
-  def recaptchaService
   def passwordValidationService
   def cryptoService
   def emailManagerService
   def smsDeliveryService
 
   def setup() {
-    recaptchaService = Mock(com.megatome.grails.RecaptchaService)
-    controller.recaptchaService = recaptchaService
-
     passwordValidationService = Mock(aaf.vhr.PasswordValidationService)
     controller.passwordValidationService = passwordValidationService
 
@@ -96,21 +92,6 @@ class LostPasswordControllerSpec extends spock.lang.Specification {
     result
   }
 
-  def 'obtainsubject errors on invalid captcha'() {
-    setup:
-    params.login = 'testuser'
-
-    when:
-    controller.obtainsubject()
-
-    then:
-    1 * recaptchaService.verifyAnswer(_,_,_) >> false
-    flash.type == 'error'
-    flash.message == 'controllers.aaf.vhr.lostpassword.recaptcha.error'
-    view == '/lostPassword/start'
-    model.login == 'testuser'
-  }
-
   def 'obtainsubject errors if invalid login provided'() {
     setup:
     params.login = 'testuser'
@@ -119,7 +100,6 @@ class LostPasswordControllerSpec extends spock.lang.Specification {
     controller.obtainsubject()
 
     then:
-    1 * recaptchaService.verifyAnswer(_,_,_) >> true
     flash.type == 'info'
     flash.message == 'controllers.aaf.vhr.lostpassword.requiresaccount'
     response.redirectedUrl == "/lostPassword/start"
@@ -134,7 +114,6 @@ class LostPasswordControllerSpec extends spock.lang.Specification {
     controller.obtainsubject()
 
     then:
-    1 * recaptchaService.verifyAnswer(_,_,_) >> true
     response.redirectedUrl == "/lostPassword/support"
   }
 
@@ -148,7 +127,6 @@ class LostPasswordControllerSpec extends spock.lang.Specification {
     controller.obtainsubject()
 
     then:
-    1 * recaptchaService.verifyAnswer(_,_,_) >> true
     response.redirectedUrl == "/lostPassword/support"
   }
 
@@ -163,7 +141,6 @@ class LostPasswordControllerSpec extends spock.lang.Specification {
     controller.obtainsubject()
 
     then:
-    1 * recaptchaService.verifyAnswer(_,_,_) >> true
     response.redirectedUrl == "/lostPassword/reset"
     ms.resetCode == '1234'
     ms.resetCodeExternal == '5678'

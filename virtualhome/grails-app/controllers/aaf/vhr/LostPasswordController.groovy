@@ -15,7 +15,6 @@ class LostPasswordController {
   final static defaultAction = "start"
 
   def messageSource
-  def recaptchaService
   def passwordValidationService
   def cryptoService
   def emailManagerService
@@ -27,44 +26,34 @@ class LostPasswordController {
   }
 
   def obtainsubject() {
-    if (!recaptchaService.verifyAnswer(session, request.getRemoteAddr(), params)) {
-      log.error "Recaptcha incorrect when attempting to obtain subject"
-        
-      flash.type = 'error'
-      flash.message = 'controllers.aaf.vhr.lostpassword.recaptcha.error'
-      render view:'start', model:[login:params.login]
-
-      return
-    }
-
     def managedSubjectInstance = ManagedSubject.findWhere(login: params.login)
     if(!managedSubjectInstance) {
       log.error "No ManagedSubject representing ${params.login} found, requesting login before accessing password change"
-      
+
       flash.type = 'info'
       flash.message = 'controllers.aaf.vhr.lostpassword.requiresaccount'
       redirect action: 'start'
 
-      return
+
+    } else {
+      session.setAttribute(CURRENT_USER, managedSubjectInstance.id)
+
+      if(!managedSubjectInstance.canChangePassword()) {
+        log.error "Unable to reset password for $managedSubjectInstance as account is not currently able to change passwords"
+        redirect action: 'support'
+
+        return
+      }
+
+      if(!managedSubjectInstance.isFinalized()) {
+        log.error "Unable to reset password for $managedSubjectInstance as account has not been finalized"
+        redirect action: 'support'
+
+        return
+      }
+
+      redirect action: 'reset'
     }
-
-    session.setAttribute(CURRENT_USER, managedSubjectInstance.id)
-
-    if(!managedSubjectInstance.canChangePassword()) {
-      log.error "Unable to reset password for $managedSubjectInstance as account is not currently able to change passwords"
-      redirect action: 'support'
-
-      return
-    }
-
-    if(!managedSubjectInstance.isFinalized()) {
-      log.error "Unable to reset password for $managedSubjectInstance as account has not been finalized"
-      redirect action: 'support'
-
-      return
-    }
-
-    redirect action: 'reset'
   }
 
   def reset() {

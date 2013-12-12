@@ -5,7 +5,7 @@
   </head>
   <body>
 
-    <h2>Hello! <small>To reset your forgotten password please provide your username and challenge answer below</small></h2>
+    <h2>Hello! <small>To reset your forgotten password please provide your username below</small></h2>
 
     <g:render template="/templates/flash" plugin="aafApplicationBase"/>
 
@@ -19,24 +19,6 @@
           <div class="span4">
             <span class="help-block">
               <p>Please enter the username you selected when setting up your account.</p>
-            </span>
-          </div>
-        </div>
-      </div>
-
-      <hr>
-
-      <div class="control-group">
-        <label class="control-label" for="plainPassword">Challenge Question</label><br>
-        <div class="controls">
-          <div class="span5">
-            <recaptcha:ifEnabled>
-              <recaptcha:recaptcha theme="white"/>
-            </recaptcha:ifEnabled>
-          </div>
-          <div class="span4">
-            <span class="help-block">
-              <p>Please enter the two words shown at the left so we can ensure you're a real person and not an automated bot.</p>
             </span>
           </div>
         </div>
