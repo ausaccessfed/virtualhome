@@ -217,7 +217,7 @@ class GroupController {
 
   def toggleBlocked(Long id, Long version) {
     def groupInstance = Group.get(id)
-    if(SecurityUtils.subject.isPermitted("app:administration")) {
+    if(SecurityUtils.subject.isPermitted("app:administrator")) {
       if (version == null) {
         flash.type = 'error'
         flash.message = 'controllers.aaf.vhr.group.toggleblocked.noversion'
@@ -253,7 +253,7 @@ class GroupController {
 
   def toggleArchived(Long id, Long version) {
     def groupInstance = Group.get(id)
-    if(SecurityUtils.subject.isPermitted("app:administration")) {
+    if(SecurityUtils.subject.isPermitted("app:administrator")) {
       if (version == null) {
         flash.type = 'error'
         flash.message = 'controllers.aaf.vhr.group.togglearchived.noversion'
@@ -283,6 +283,31 @@ class GroupController {
     }
     else {
       log.warn "Attempt to do administrative Group togglearchived by $subject was denied - not permitted by assigned permissions"
+      response.sendError 403
+    }
+  }
+
+  def enforcetwosteplogin(Long id, boolean enforce) {
+    def groupInstance = Group.get(id)
+    if(groupInstance.canMutate()) {
+      groupInstance.totpForce = enforce
+
+      if(!groupInstance.save()) {
+        log.warn "Failed to save change of two-step enforce for $groupInstance"
+        response.sendError 500
+        return
+      }
+
+      log.info "Action: enforcetwosteplogin, Subject: $subject, Object: $groupInstance"
+      flash.type = 'success'
+      if(enforce)
+        flash.message = 'controllers.aaf.vhr.group.enforcetwosteplogin.enable.success'
+      else
+        flash.message = 'controllers.aaf.vhr.group.enforcetwosteplogin.disable.success'
+      redirect(action: "show", id: groupInstance.id)
+    }
+    else {
+      log.warn "Attempt to do administrative Group enforcetwosteplogin by $subject was denied - not permitted by assigned permissions"
       response.sendError 403
     }
   }

@@ -39,6 +39,7 @@ src/templates/scaffolding
 
 # "temporary" build files
 /target
+/target.old
 
 # other
 shiro.properties

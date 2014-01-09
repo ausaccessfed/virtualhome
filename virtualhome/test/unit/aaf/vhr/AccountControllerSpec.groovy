@@ -34,7 +34,7 @@ class AccountControllerSpec extends spock.lang.Specification {
     controller.login(ms.login, 'password')
 
     then:
-    1 * loginService.webLogin(ms, _, _, _, _) >> [false, null]
+    1 * loginService.passwordLogin(ms, _, _, _, _) >> false
     view == '/account/index'
   }
 
@@ -51,7 +51,7 @@ class AccountControllerSpec extends spock.lang.Specification {
     controller.login(ms.login, 'password')
 
     then:
-    1 * loginService.webLogin(ms, _, _, _, _) >> [true, ms]
+    1 * loginService.passwordLogin(ms, _, _, _, _) >> true
     response.redirectedUrl == "/account/show"
   }
 

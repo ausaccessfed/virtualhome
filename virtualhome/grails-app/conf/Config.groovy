@@ -23,7 +23,7 @@ auditLog {
 }
 
 security.shiro.authc.required = false
-security.shiro.authc.strategy = aaf.base.shiro.FirstExceptionStrategy 
+security.shiro.authc.strategy = aaf.base.shiro.FirstExceptionStrategy
 
 grails.project.groupId = appName
 grails.converters.xml.pretty.print = true
@@ -76,7 +76,14 @@ environments {
                                 'grails.app.services',
                                 'grails.app.realms',
                                 'aaf.vhr']
-      } 
+    }
+
+    jasypt {
+      algorithm = "PBEWITHSHA256AND256BITAES-CBC-BC"
+      providerName = "BC"
+      password = "mesecretivesecretmehearties"
+      keyObtentionIterations = 100
+    }
   }
 }
 

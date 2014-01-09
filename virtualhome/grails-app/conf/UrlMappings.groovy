@@ -39,6 +39,10 @@ class UrlMappings {
       controller="account"
       action="login"
     }
+    "/myaccount/twosteplogin" {
+      controller="account"
+      action="twosteplogin"
+    }
     "/myaccount/logout" {
       controller="account"
       action="logout"
@@ -55,6 +59,19 @@ class UrlMappings {
       controller="account"
       action="completedetailschange"
     }
+    "/myaccount/enabletwostep" {
+      controller="account"
+      action="enabletwostep"
+    }
+    "/myaccount/setuptwostep" {
+      controller="account"
+      action="setuptwostep"
+    }
+    "/myaccount/completesetuptwostep" {
+      controller = "account"
+      action = "completesetuptwostep"
+    }
+
     "/lostpassword/$action" {
       controller="lostPassword"
     }

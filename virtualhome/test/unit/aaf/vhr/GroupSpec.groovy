@@ -299,4 +299,15 @@ class GroupSpec extends spock.lang.Specification  {
     !result
   }
 
+  def 'ensure correct response for enforceTwoStepLogin'() {
+    setup:
+    def g = Group.build(totpForce:force)
+
+    expect:
+    g.enforceTwoStepLogin() == force
+
+    where:
+    force << [true, false]
+  }
+
 }

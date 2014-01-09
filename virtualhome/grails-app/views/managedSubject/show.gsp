@@ -78,6 +78,7 @@
 
     <div class="tab-content">
       <div id="tab-overview" class="tab-pane active">
+        <h3 class="muted">Account Details</h3>
         <div class="row">
           <div class="span5">
             <table class="table table-borderless">
@@ -187,24 +188,57 @@
         <hr>
 
         <div class="row">
-          <div class="span12">
+          <div class="span8">
+            <h3 class="muted">2-Step verification</h3>
+            <g:if test="${managedSubjectInstance.isUsingTwoStepLogin() || managedSubjectInstance.enforceTwoStepLogin()}">
+              <p>This account is enrolled in 2-Step verification for added security.</p>
+              <table class="table table-borderless">
+                <tbody>
+                  <tr>
+                    <td><strong>User has configured smart phone app?</strong></td>
+                    <td><g:formatBoolean boolean="${managedSubjectInstance.isUsingTwoStepLogin()}"/></td>
+                  </tr>
+                  <tr>
+                    <td><strong>User is required by local administrator policy to use two-step login?</strong></td>
+                    <td>
+                      <g:formatBoolean boolean="${managedSubjectInstance.totpForce}"/>
+                    </td>
+                  </tr>
+                  <tr>
+                    <td><strong>User is required by group administrator policy to use two-step login?</strong></td>
+                    <td>
+                      <g:formatBoolean boolean="${managedSubjectInstance.group.totpForce}"/>
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
+            </g:if>
+            <g:else>
+              <p>This account is not currently making use of 2-Step verification.</p>
+              <p>Administrators can force this user to enroll for 2-Step verification in the <strong>actions</strong> menu.</p>
+            </g:else>
+          </div>
+        </div>
 
+        <hr>
+
+        <div class="row">
+          <div class="span6">
+            <h3 class="muted"><g:message encodeAs='HTML' code="label.internaldata"/></h3>
             <table class="table table-borderless">
               <tbody>
-                <tr><td colspan="2"><h4><g:message encodeAs='HTML' code="label.internaldata"/></h4></td></tr>
-
                 <tr>
-                  <th class="span4"><span id="internalid-label"><strong><g:message encodeAs='HTML' code="label.internalid" /></strong></span></th>
+                  <th><span id="internalid-label"><strong><g:message encodeAs='HTML' code="label.internalid" /></strong></span></th>
                   <td><span aria-labelledby="internalid-label"><g:fieldValue bean="${managedSubjectInstance}" field="id" /></span></td>
                 </tr>
 
                 <tr>
-                  <th class="span4"><span id="login-label"><strong><g:message encodeAs='HTML' code="label.login" /></strong></span></th>
+                  <th><span id="login-label"><strong><g:message encodeAs='HTML' code="label.login" /></strong></span></th>
                   <td><span aria-labelledby="login-label"><g:fieldValue bean="${managedSubjectInstance}" field="login"/></span></td>
                 </tr>
 
                 <tr>
-                  <th class="span4"><span id="accountexpiry-label"><strong><g:message encodeAs='HTML' code="label.accountexpires" /></strong></span></th>
+                  <th><span id="accountexpiry-label"><strong><g:message encodeAs='HTML' code="label.accountexpires" /></strong></span></th>
                   <td>
                     <g:if test="${managedSubjectInstance.accountExpires}">
                       <span aria-labelledby="accountexpiry-label"><g:formatDate format="dd-MM-yyyy" date="${managedSubjectInstance.accountExpires}"/></span></td>
@@ -216,32 +250,32 @@
                 </tr>
 
                 <tr>
-                  <th class="span4"><span id="active-label"><strong><g:message encodeAs='HTML' code="label.active" /></strong></span></th>
+                  <th><span id="active-label"><strong><g:message encodeAs='HTML' code="label.active" /></strong></span></th>
                   <td><span aria-labelledby="active-label"><g:formatBoolean boolean="${managedSubjectInstance?.active}" /></span></td>
                 </tr>
 
                 <tr>
-                  <th class="span4"><span id="locked-label"><strong><g:message encodeAs='HTML' code="label.locked" /></strong></span></th>
+                  <th><span id="locked-label"><strong><g:message encodeAs='HTML' code="label.locked" /></strong></span></th>
                   <td><span aria-labelledby="locked-label"><g:formatBoolean boolean="${managedSubjectInstance?.locked}" /></span></td>
                 </tr>
 
                 <tr>
-                  <th class="span4"><span id="archived-label"><strong><g:message encodeAs='HTML' code="label.archived" /></strong></span></th>
+                  <th><span id="archived-label"><strong><g:message encodeAs='HTML' code="label.archived" /></strong></span></th>
                   <td><span aria-labelledby="archived-label"><g:formatBoolean boolean="${managedSubjectInstance?.archived}" /></span></td>
                 </tr>
 
                 <tr>
-                  <th class="span4"><span id="blocked-label"><strong><g:message encodeAs='HTML' code="label.blocked" /></strong></span></th>
+                  <th><span id="blocked-label"><strong><g:message encodeAs='HTML' code="label.blocked" /></strong></span></th>
                   <td><span aria-labelledby="blocked-label"><g:formatBoolean boolean="${managedSubjectInstance?.blocked}" /></span></td>
                 </tr>
 
                 <tr>
-                  <th class="span4"><span id="organization-label"><strong><g:message encodeAs='HTML' code="label.organization" /></strong></span></th>
+                  <th><span id="organization-label"><strong><g:message encodeAs='HTML' code="label.organization" /></strong></span></th>
                   <td><span aria-labelledby="organization-label"><g:link controller="organization" action="show" id="${managedSubjectInstance?.organization?.id}"><g:fieldValue bean="${managedSubjectInstance.organization}" field="displayName"/></g:link></span></td>
                 </tr>
               
                 <tr>
-                  <th class="span4"><span id="group-label"><strong><g:message encodeAs='HTML' code="label.group" /></strong></span></th>
+                  <th><span id="group-label"><strong><g:message encodeAs='HTML' code="label.group" /></strong></span></th>
                   <td><span aria-labelledby="group-label"><g:link controller="group" action="show" id="${managedSubjectInstance?.group?.id}"><g:fieldValue bean="${managedSubjectInstance.group}" field="name"/></g:link></span></td>
                 </tr>
               </tbody>

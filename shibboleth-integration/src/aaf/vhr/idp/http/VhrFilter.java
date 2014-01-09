@@ -25,7 +25,7 @@ import aaf.vhr.idp.VhrSessionValidator;
 
 public class VhrFilter implements Filter {
 	
-	final String SSO_COOKIE_NAME = "vhr_login";
+	final String SSO_COOKIE_NAME = "_vh_l1";
 	
 	private String vhrLoginEndpoint;
 	private VhrSessionValidator vhrSessionValidator;

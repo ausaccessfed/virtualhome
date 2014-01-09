@@ -16,6 +16,8 @@ class Group {
 
   String welcomeMessage
 
+  boolean totpForce       // All accounts must setup 2-Step Verification and can't opt out
+
   boolean active = true
   boolean blocked = false
   boolean archived = false
@@ -60,5 +62,9 @@ class Group {
 
   public boolean functioning() {
     active && !archived && !blocked && organization.functioning()
+  }
+
+  public boolean enforceTwoStepLogin() {
+    this.totpForce
   }
 }

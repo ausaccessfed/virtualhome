@@ -572,13 +572,11 @@ class GroupControllerSpec  extends spock.lang.Specification {
     flash.message == 'controllers.aaf.vhr.group.toggleactive.success'
   }
 
-
-
   def 'ensure correct output from toggleBlocked when invalid permission'() {
     setup:
     def groupTestInstance = Group.build()
     groupTestInstance.organization.active = true
-    shiroSubject.isPermitted("app:admnistration") >> false
+    shiroSubject.isPermitted("app:administrator") >> false
 
     when:
     params.id = groupTestInstance.id
@@ -593,7 +591,7 @@ class GroupControllerSpec  extends spock.lang.Specification {
     setup:
     def groupTestInstance = Group.build()
     groupTestInstance.organization.active = true
-    shiroSubject.isPermitted("app:administration") >> true
+    shiroSubject.isPermitted("app:administrator") >> true
     
     expect:
     Group.count() == 1
@@ -613,7 +611,7 @@ class GroupControllerSpec  extends spock.lang.Specification {
     setup:
     def groupTestInstance = Group.build(blocked:false)
     groupTestInstance.organization.active = true
-    shiroSubject.isPermitted("app:administration") >> true
+    shiroSubject.isPermitted("app:administrator") >> true
     
     expect:
     Group.count() == 1
@@ -635,7 +633,7 @@ class GroupControllerSpec  extends spock.lang.Specification {
     setup:
     def groupTestInstance = Group.build()
     groupTestInstance.organization.active = true
-    shiroSubject.isPermitted("app:admnistration") >> false
+    shiroSubject.isPermitted("app:administrator") >> false
 
     when:
     params.id = groupTestInstance.id
@@ -650,7 +648,7 @@ class GroupControllerSpec  extends spock.lang.Specification {
     setup:
     def groupTestInstance = Group.build()
     groupTestInstance.organization.active = true
-    shiroSubject.isPermitted("app:administration") >> true
+    shiroSubject.isPermitted("app:administrator") >> true
     
     expect:
     Group.count() == 1
@@ -670,7 +668,7 @@ class GroupControllerSpec  extends spock.lang.Specification {
     setup:
     def groupTestInstance = Group.build(archived:false)
     groupTestInstance.organization.active = true
-    shiroSubject.isPermitted("app:administration") >> true
+    shiroSubject.isPermitted("app:administrator") >> true
     
     expect:
     Group.count() == 1
@@ -678,7 +676,7 @@ class GroupControllerSpec  extends spock.lang.Specification {
 
     when:
     params.id = groupTestInstance.id
-    params.version = 1
+    params.version = 0
     controller.toggleArchived()
 
     then:
@@ -686,5 +684,30 @@ class GroupControllerSpec  extends spock.lang.Specification {
     groupTestInstance.archived
     flash.type == 'success'
     flash.message == 'controllers.aaf.vhr.group.togglearchived.success'
+  }
+
+  def 'ensure correct output from enforcetwosteplogin'() {
+    setup:
+    def groupTestInstance = Group.build(archived:false, active:true, blocked:false)
+    groupTestInstance.organization.active = true
+    shiroSubject.isPermitted("app:administrator") >> true
+
+    expect:
+    Group.count() == 1
+    !groupTestInstance.archived
+
+    when:
+    controller.enforcetwosteplogin(groupTestInstance.id, enforce)
+
+    then:
+    Group.count() == 1
+    groupTestInstance.totpForce == enforce
+    flash.type == 'success'
+    flash.message == message
+    response.status == 302
+
+    where:
+    enforce << [true, false]
+    message << ['controllers.aaf.vhr.group.enforcetwosteplogin.enable.success', 'controllers.aaf.vhr.group.enforcetwosteplogin.disable.success']
   }
 }

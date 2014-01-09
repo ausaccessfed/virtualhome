@@ -1,10 +1,14 @@
 package aaf.vhr
 
+import com.bloomhealthco.jasypt.GormEncryptedStringType
+
 import groovy.transform.EqualsAndHashCode
 import groovy.transform.ToString
 
 import aaf.base.identity.Subject
 import org.apache.shiro.SecurityUtils
+
+import groovy.time.TimeCategory
 
 @ToString(includeNames=true, includes="id, login, cn, email")
 @EqualsAndHashCode
@@ -23,6 +27,9 @@ class ManagedSubject {
   String login
   String hash
 
+  String totpKey              // 2-Step Verification (Time-base One Time Password), Used with Google Authenticator and simillar apps
+  boolean totpForce           // This account must setup 2-Step Verification and can't opt out
+
   String apiKey               // Use for local account management context
   String eptidKey             // Used as input for EPTID generation so login changes don't impact us - should never be altered.
 
@@ -33,7 +40,7 @@ class ManagedSubject {
   // Last time the password reset codes were resent to the user. Used for throttling.
   Date lastCodeResend
 
-  Date accountExpires         
+  Date accountExpires
 
   // AAF Core
   String cn                   // oid:2.5.4.3
@@ -43,7 +50,7 @@ class ManagedSubject {
   String eduPersonAssurance   // oid:1.3.6.1.4.1.5923.1.1.1.11
   String eduPersonAffiliation // oid:1.3.6.1.4.1.5923.1.1.1.1 - stored seperated by ; for IdP resolver simplification
   String eduPersonEntitlement // oid:1.3.6.1.4.1.5923.1.1.1.7 - stored seperated by ; for IdP resolver simplification
-  
+
   // AAF Optional
   String givenName            // oid:2.5.4.42
   String surname              // oid:2.5.4.4
@@ -69,7 +76,8 @@ class ManagedSubject {
   static hasMany = [challengeResponse: ChallengeResponse,
                     emailReset: EmailReset,
                     invitations: ManagedSubjectInvitation,
-                    stateChanges: StateChange]  
+                    stateChanges: StateChange,
+                    twoStepSessions: TwoStepSession]
 
   static belongsTo = [organization:Organization,
                       group:Group]
@@ -77,6 +85,7 @@ class ManagedSubject {
   static constraints = {
     login nullable:true, blank: false, unique: true, size: 3..100,  validator: { val -> if (val?.contains(' ')) return 'value.contains.space' }
     hash nullable:true, blank:false, minSize:60, maxSize:60
+    totpKey nullable:true
     
     resetCode nullable:true
     resetCodeExternal nullable:true, validator: {val, obj ->
@@ -117,6 +126,7 @@ class ManagedSubject {
 
   static mapping = {
     eduPersonEntitlement type: "text"
+    totpKey type: GormEncryptedStringType
   }
 
   def beforeValidate() {
@@ -161,6 +171,47 @@ class ManagedSubject {
 
   public boolean requiresLoginCaptcha() {
     this.failedLogins > 2
+  }
+
+  public boolean isUsingTwoStepLogin() {
+    this.totpKey != null
+  }
+
+  public boolean enforceTwoStepLogin() {
+    this.totpForce || group.enforceTwoStepLogin()
+  }
+
+  public boolean hasEstablishedTwoStepLogin(String sessionID) {
+    use (TimeCategory) {
+      def twoStepSession = twoStepSessions?.find{ it?.value == sessionID }
+      (twoStepSession && twoStepSession.expiry > 90.days.ago)
+    }
+  }
+
+  public TwoStepSession establishTwoStepSession() {
+    def session = new TwoStepSession()
+    session.populate()
+
+    this.addToTwoStepSessions(session)
+
+    if(!this.save(flush:true)) {
+      log.error "Unable to save $this when adding TwoStep session"
+      this.errors.each {
+        log.error it
+      }
+      throw new RuntimeException ("Unable to save $this when adding TwoStep session")
+    }
+
+    session
+  }
+
+  public void cleanupEstablishedTwoStepLogin() {
+    use (TimeCategory) {
+      twoStepSessions?.each { twoStepSession ->
+        if(twoStepSession && twoStepSession?.expiry < 90.days.ago)
+          twoStepSession.delete()
+      }
+    }
   }
 
   public boolean functioning() {
@@ -356,6 +407,14 @@ class ManagedSubject {
 
     def change = new StateChange(event:StateChangeType.LOGIN, reason:reason, category:category, environment:environment, actionedBy:actionedBy)
     this.addToStateChanges(change)
+
+    if(!this.save(flush:true)) {
+      log.error "Unable to save $this when setting successfulLogin state"
+      this.errors.each {
+        log.error it
+      }
+      throw new RuntimeException ("Unable to save $this when setting successfulLogin state")
+    }
   }
 
   public successfulLostPassword() {

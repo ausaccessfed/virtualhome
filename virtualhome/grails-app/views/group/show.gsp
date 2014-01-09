@@ -94,7 +94,20 @@
             </tr>
 
             <tr><td colspan="2"><hr></tr></td>
-            <tr><td colspan="2"><strong><g:message encodeAs='HTML' code="label.internaldata"/></tr></td>
+
+            <tr><td colspan="2"><strong>2-Step verification</strong></td></tr>
+            <tr><td colspan="2">
+              <g:if test="${groupInstance.enforceTwoStepLogin()}">
+                <p>All accounts within this group are required to use 2-Step verification for extra security.</p>
+              </g:if>
+              <g:else>
+                <p>Accounts within this group are <strong>NOT</strong> required to use 2-Step verification.</p>
+              </g:else>
+            </td></tr>
+
+            <tr><td colspan="2"><hr></tr></td>
+
+            <tr><td colspan="2"><strong><g:message encodeAs='HTML' code="label.internaldata"/></strong></tr></td>
 
             <tr>
               <th class="span4"><span id="internalid-label"><strong><g:message encodeAs='HTML' code="label.internalid" /></strong></span></th>

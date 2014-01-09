@@ -5,15 +5,12 @@ import static groovyx.net.http.ContentType.JSON
 import javax.servlet.http.Cookie
 
 import aaf.vhr.switchch.vho.DeprecatedSubject
-import aaf.vhr.MigrateController
 
 class LoginController {
 
   final String INVALID_USER = "aaf.vhr.LoginController.INVALID_USER"
   final String CURRENT_USER = "aaf.vhr.LoginController.CURRENT_USER"
   final String SSO_URL = "aaf.vhr.LoginController.SSO_URL"
-
-  final String SSO_COOKIE_NAME = "vhr_login"
 
   def loginService
 
@@ -59,30 +56,53 @@ class LoginController {
       return
     }
 
-    def (loggedIn, sessionID) = loginService.webLogin(managedSubjectInstance, password, request, session, params)
+    def validPassword = loginService.passwordLogin(managedSubjectInstance, password, request, session, params)
 
-    if(!loggedIn) {
+    if(!validPassword) {
       log.info "LoginService indicates failure for attempted login by $managedSubjectInstance"
       session.setAttribute(CURRENT_USER, managedSubjectInstance.id)
       redirect action:"index"
       return
     }
 
-    log.info "LoginService indicates success for attempted login by ${managedSubjectInstance}. Established sessionID of $sessionID"
+    if(managedSubjectInstance.enforceTwoStepLogin() && !managedSubjectInstance.isUsingTwoStepLogin()){
+      // This account needs to be updated before they can login
+      session.setAttribute(AccountController.CURRENT_USER, managedSubjectInstance.id)
+      redirect controller:'account', action:'setuptwostep'
+      return
+    }
 
-    // Setup SSO cookie for use with Shib IdP VHR filter
-    int maxAge = grailsApplication.config.aaf.vhr.login.validity_period_minutes * 60
-    Cookie cookie = new Cookie(SSO_COOKIE_NAME, sessionID)
-    cookie.maxAge = maxAge
-    cookie.secure = grailsApplication.config.aaf.vhr.login.ssl_only_cookie
-    cookie.path = grailsApplication.config.aaf.vhr.login.path
-    response.addCookie(cookie)
+    if(managedSubjectInstance.isUsingTwoStepLogin()) {
+      def twoStepCookie = request.cookies.find { it.name == LoginService.TWOSTEP_COOKIE_NAME }
+      if(!twoStepCookie || !managedSubjectInstance.hasEstablishedTwoStepLogin(twoStepCookie.value)) {
+        // No existing 2 step login or existing session is invalid
+        log.info "Requesting 2-Step verification for ${managedSubjectInstance}"
+        render(view: "twostep", model: [managedSubjectInstance: managedSubjectInstance])
+        return
+      }
 
-    session.removeAttribute(INVALID_USER)
-    session.removeAttribute(CURRENT_USER)
-    session.removeAttribute(SSO_URL)
+      log.info("Existing two step session identifier ${twoStepCookie.value} is valid for ${managedSubjectInstance}.")
+    }
 
-    redirect url: redirectURL
+    redirect url: establishSession(managedSubjectInstance)
+  }
+
+  def twosteplogin(long id, long totp) {
+    def managedSubjectInstance = ManagedSubject.get(id)
+    if(!managedSubjectInstance) {
+      log.error "No ManagedSubject represented by $id in extendedlogin"
+      session.setAttribute(INVALID_USER, true)
+      redirect action:"index"
+      return
+    }
+
+    if(!loginService.twoStepLogin(managedSubjectInstance, totp, request, response)) {
+      log.info "LoginService indicates twoStepLogin failure for attempted login by $managedSubjectInstance"
+      render(view: "twostep", model: [managedSubjectInstance: managedSubjectInstance, loginError:true])
+      return
+    }
+
+    redirect url: establishSession(managedSubjectInstance)
   }
 
   def oops() {
@@ -105,7 +125,31 @@ class LoginController {
 
           response.sendError 500
         }
-
      }
-  }  
+  }
+
+  private String establishSession(ManagedSubject managedSubjectInstance) {
+    def redirectURL = session.getAttribute(SSO_URL)
+    if(!redirectURL) {
+      log.error "No redirectURL set for login, redirecting to oops"
+      return createLink(action: 'oops')
+    }
+
+    def sessionID = loginService.establishSession(managedSubjectInstance)
+    log.info "Login by ${managedSubjectInstance} was completed successfully. Associated new VH > Shib API session verification id of ${sessionID}."
+
+    // Setup SSO cookie for use with Shib IdP VHR filter
+    int maxAge = grailsApplication.config.aaf.vhr.login.validity_period_minutes * 60
+    Cookie cookie = new Cookie(LoginService.SSO_COOKIE_NAME, sessionID)
+    cookie.maxAge = maxAge
+    cookie.secure = grailsApplication.config.aaf.vhr.login.ssl_only_cookie
+    cookie.path = grailsApplication.config.aaf.vhr.login.path
+    response.addCookie(cookie)
+
+    session.removeAttribute(INVALID_USER)
+    session.removeAttribute(CURRENT_USER)
+    session.removeAttribute(SSO_URL)
+
+    redirectURL
+  }
 }

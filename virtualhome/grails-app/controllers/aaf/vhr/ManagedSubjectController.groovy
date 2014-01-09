@@ -6,7 +6,7 @@ import org.apache.shiro.SecurityUtils
 class ManagedSubjectController {
 
   static defaultAction = "list"
-  static allowedMethods = [save: "POST", update: "POST", delete: "DELETE", resend:"POST"]
+  static allowedMethods = [save: "POST", update: "POST", delete: "DELETE", resend:"POST", resettwosteplogin:"POST", enforcetwosteplogin:"POST"]
 
   def beforeInterceptor = [action: this.&validManagedSubject, except: ['list', 'create', 'save', 'createcsv', 'savecsv']]
 
@@ -269,6 +269,53 @@ class ManagedSubjectController {
     }
     else {
       log.warn "Attempt to do administrative ManagedSubject resend by $subject was denied - not permitted by assigned permissions"
+      response.sendError 403
+    }
+  }
+
+  def resettwosteplogin(Long id) {
+    def managedSubjectInstance = ManagedSubject.get(id)
+    if(managedSubjectInstance.canMutate()) {
+      managedSubjectInstance.totpKey = null
+
+      if(!managedSubjectInstance.save()) {
+        log.warn "Failed to save totpkey reset for $managedSubjectInstance"
+        response.sendError 500
+        return
+      }
+
+      log.info "Action: resettwosteplogin, Subject: $subject, Object: $managedSubjectInstance"
+      flash.type = 'success'
+      flash.message = 'controllers.aaf.vhr.managedsubject.resettwosteplogin.success'
+      redirect(action: "show", id: managedSubjectInstance.id)
+    }
+    else {
+      log.warn "Attempt to do administrative ManagedSubject resettwosteplogin by $subject was denied - not permitted by assigned permissions"
+      response.sendError 403
+    }
+  }
+
+  def enforcetwosteplogin(Long id, boolean enforce) {
+    def managedSubjectInstance = ManagedSubject.get(id)
+    if(managedSubjectInstance.canMutate()) {
+      managedSubjectInstance.totpForce = enforce
+
+      if(!managedSubjectInstance.save()) {
+        log.warn "Failed to save change of two-step enforce for $managedSubjectInstance"
+        response.sendError 500
+        return
+      }
+
+      log.info "Action: enforcetwosteplogin, Subject: $subject, Object: $managedSubjectInstance"
+      flash.type = 'success'
+      if(enforce)
+        flash.message = 'controllers.aaf.vhr.managedsubject.enforcetwosteplogin.enable.success'
+      else
+        flash.message = 'controllers.aaf.vhr.managedsubject.enforcetwosteplogin.disable.success'
+      redirect(action: "show", id: managedSubjectInstance.id)
+    }
+    else {
+      log.warn "Attempt to do administrative ManagedSubject enforcetwosteplogin by $subject was denied - not permitted by assigned permissions"
       response.sendError 403
     }
   }

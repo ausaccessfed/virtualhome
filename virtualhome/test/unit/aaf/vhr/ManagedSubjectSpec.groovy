@@ -9,9 +9,11 @@ import aaf.vhr.ManagedSubject
 
 import test.shared.ShiroEnvironment
 
+import groovy.time.TimeCategory
+
 @TestFor(aaf.vhr.ManagedSubject)
-@Build([ManagedSubject, Organization, Group, ChallengeResponse])
-@Mock([ManagedSubject, Organization, Group, ChallengeResponse, StateChange])
+@Build([ManagedSubject, Organization, Group, ChallengeResponse, TwoStepSession])
+@Mock([ManagedSubject, Organization, Group, ChallengeResponse, StateChange, TwoStepSession])
 class ManagedSubjectSpec extends spock.lang.Specification  {
 
   @Shared def shiroEnvironment = new ShiroEnvironment()
@@ -79,6 +81,22 @@ class ManagedSubjectSpec extends spock.lang.Specification  {
     then:
     !s.save()
     'unique' == s.errors['login']
+  }
+
+  def 'ensure totpKey can be null'() {
+    setup:
+    def s = ManagedSubject.build(totpKey:'1234')
+    mockForConstraintsTests(ManagedSubject, [s])
+
+    expect:
+    s.validate()
+    s.totpKey != null
+
+    when:
+    s.totpKey = null
+
+    then:
+    s.save()
   }
 
   def 'ensure subject stores attribute values'() {
@@ -894,6 +912,90 @@ class ManagedSubjectSpec extends spock.lang.Specification  {
     s.failedLogins == 0
     !s.resetCode
     !s.resetCodeExternal
+  }
+
+  def 'ensure isUsingTwoStepLogin works correctly'() {
+    setup:
+    def s = ManagedSubject.build(failedLogins:0, active:true, hash:'z0tYfrdu6V8stLN/hIu+xK8Rd5dsSueYwJ88XRgL2U4Z0JFSVspxsGOPK222', totpKey: totpKey)
+    s.organization.active = true
+
+    when:
+    def result = s.isUsingTwoStepLogin()
+
+    then:
+    result == expected
+
+    where:
+    expected << [false, true]
+    totpKey << [null, 'DPS6XA5YWTZFQ4FI']
+  }
+
+  def 'ensure hasEstablishedTwoStepLogin works correctly'() {
+      setup:
+      def s = ManagedSubject.build(failedLogins:0, active:true, hash:'z0tYfrdu6V8stLN/hIu+xK8Rd5dsSueYwJ88XRgL2U4Z0JFSVspxsGOPK222', totpKey: 'DPS6XA5YWTZFQ4FI')
+      s.organization.active = true
+      s.twoStepSessions = [sessions]
+
+      when:
+      def result = s.hasEstablishedTwoStepLogin('1234abcd')
+
+      then:
+      result == expected
+
+      where:
+      //yesterday, 91 days ago, no sessions
+      sessions << [(new TwoStepSession(value:'1234abcd', expiry: use(TimeCategory) {1.days.ago})), (new TwoStepSession(value:'1234abcd', expiry: use(TimeCategory) {91.days.ago})), null]
+      expected << [true, false, false]
+  }
+
+  def 'ensure cleanupEstablishedTwoStepLogin works correctly'() {
+      setup:
+      def s = ManagedSubject.build(failedLogins:0, active:true, hash:'z0tYfrdu6V8stLN/hIu+xK8Rd5dsSueYwJ88XRgL2U4Z0JFSVspxsGOPK222', totpKey: 'DPS6XA5YWTZFQ4FI')
+      s.organization.active = true
+      s.twoStepSessions = [sessions]
+      s.save()
+
+      when:
+      def result = s.cleanupEstablishedTwoStepLogin()
+
+      then:
+      TwoStepSession.count() == expected
+
+      where:
+      //yesterday, 91 days ago, no sessions
+      sessions << [new TwoStepSession(value:'1234abcd', expiry: use(TimeCategory) {1.days.ago}), new TwoStepSession(value:'1234abcd', expiry: use(TimeCategory) {91.days.ago}), null]
+      expected << [1, 0, 0]
+  }
+
+  def 'ensure establishTwoStepSession works correctly'() {
+      setup:
+      def s = ManagedSubject.build(failedLogins:0, active:true, hash:'z0tYfrdu6V8stLN/hIu+xK8Rd5dsSueYwJ88XRgL2U4Z0JFSVspxsGOPK222', totpKey: 'DPS6XA5YWTZFQ4FI')
+      s.organization.active = true
+
+      expect:
+      TwoStepSession.count() == 0
+
+      when:
+      s.establishTwoStepSession()
+
+      then:
+      TwoStepSession.count() == 1
+      s.twoStepSessions.size() == 1
+  }
+
+  def 'ensure enforceTwoStepLogin works correctly'() {
+    setup:
+    def s = ManagedSubject.build(failedLogins:0, active:true, hash:'z0tYfrdu6V8stLN/hIu+xK8Rd5dsSueYwJ88XRgL2U4Z0JFSVspxsGOPK222', totpForce: subjectForce)
+    s.group.totpForce = groupForce
+
+    expect:
+    s.enforceTwoStepLogin() == result
+
+    where:
+    subjectForce << [true, false, true, false]
+    groupForce << [false, true, true, false]
+    result << [true, true, true, false]
+
   }
 
 }

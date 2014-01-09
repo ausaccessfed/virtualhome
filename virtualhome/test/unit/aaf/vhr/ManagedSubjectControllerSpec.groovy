@@ -1199,4 +1199,57 @@ class ManagedSubjectControllerSpec  extends spock.lang.Specification {
     flash.message == 'controllers.aaf.vhr.managedsubject.togglearchive.success'
   }
 
+  def 'ensure correct output from resettwosteplogin'() {
+    setup:
+    def group = Group.build()
+    group.organization.active = true
+    def managedSubjectTestInstance = ManagedSubject.build(group:group, organization:group.organization, totpKey:'1234')
+    shiroSubject.isPermitted("app:manage:organization:${managedSubjectTestInstance.organization.id}:group:${managedSubjectTestInstance.group.id}:managedsubject:${managedSubjectTestInstance.id}:edit") >> true
+
+    expect:
+    ManagedSubject.count() == 1
+    managedSubjectTestInstance.totpKey == '1234'
+
+    when:
+    params.id = managedSubjectTestInstance.id
+    controller.resettwosteplogin(managedSubjectTestInstance.id)
+
+    then:
+    managedSubjectTestInstance.totpKey == null
+    flash.type == 'success'
+    flash.message == 'controllers.aaf.vhr.managedsubject.resettwosteplogin.success'
+  }
+
+  def 'ensure correct output from enforcetwosteplogin'()  {
+    setup:
+    def group = Group.build()
+    group.organization.active = true
+    def managedSubjectTestInstance = ManagedSubject.build(group:group, organization:group.organization, totpKey:'1234', totpForce: !enforce)
+    shiroSubject.isPermitted("app:manage:organization:${managedSubjectTestInstance.organization.id}:group:${managedSubjectTestInstance.group.id}:managedsubject:${managedSubjectTestInstance.id}:edit") >> true
+
+    expect:
+    ManagedSubject.count() == 1
+    managedSubjectTestInstance.totpKey == '1234'
+    managedSubjectTestInstance.totpForce == !enforce
+
+    when:
+    params.id = managedSubjectTestInstance.id
+    controller.enforcetwosteplogin(managedSubjectTestInstance.id, enforce)
+
+    then:
+    managedSubjectTestInstance.totpKey == '1234'
+    managedSubjectTestInstance.totpForce == enforce
+    flash.type == 'success'
+    flash.message == message
+
+    where:
+    enforce << [true, false]
+    message << ['controllers.aaf.vhr.managedsubject.enforcetwosteplogin.enable.success', 'controllers.aaf.vhr.managedsubject.enforcetwosteplogin.disable.success']
+  }
 }
+
+
+
+
+
+
