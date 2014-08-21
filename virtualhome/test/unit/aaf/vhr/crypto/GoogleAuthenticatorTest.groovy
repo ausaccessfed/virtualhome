@@ -7,13 +7,24 @@ public class GoogleAuthenticatorTest extends grails.test.GrailsUnitTestCase {
 
   public void testGenerateSecret() {
     String secret = GoogleAuthenticator.generateSecretKey();
-    String qrURL = GoogleAuthenticator.getQRBarcodeURL('testuser', 'vhr.test.edu.au', secret)
+    String qrURL = GoogleAuthenticator.getQRBarcodeURL('testuser', 'vhr.test.edu.au', secret, null)
 
     println secret
     println qrURL
 
     assert secret.length() == 16
     assert qrURL == "https://chart.googleapis.com/chart?chs=200x200&chld=M%7C0&cht=qr&chl=otpauth://totp/testuser@vhr.test.edu.au%3Fsecret%3D" + secret
+  }
+
+  public void testGenerateSecretWithIssuer() {
+    String secret = GoogleAuthenticator.generateSecretKey();
+    String qrURL = GoogleAuthenticator.getQRBarcodeURL('testuser', 'vhr.test.edu.au', secret, "Issuer Org")
+
+    println secret
+    println qrURL
+
+    assert secret.length() == 16
+    assert qrURL == "https://chart.googleapis.com/chart?chs=200x200&chld=M%7C0&cht=qr&chl=otpauth://totp/Issuer%2520Org:testuser@vhr.test.edu.au%3Fsecret%3D" + secret + "%26issuer%3DIssuer%2520Org"
   }
 
   /*
