@@ -73,6 +73,9 @@ aaf {
       log_rounds = 6
       sha_rounds = 1024
     }
+    twosteplogin {
+      issuer = "Federation VHO"
+    }
     sharedtoken {
       sha_rounds = 1024
       idp_entityid = 'https://vhr.test.example.edu.au/idp/shibboleth'   // VHR Entity ID
