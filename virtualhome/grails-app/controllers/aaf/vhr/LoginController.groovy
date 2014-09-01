@@ -3,6 +3,7 @@ package aaf.vhr
 import groovyx.net.http.*
 import static groovyx.net.http.ContentType.JSON
 import javax.servlet.http.Cookie
+import java.net.URLEncoder
 
 import aaf.base.identity.Role
 import aaf.vhr.switchch.vho.DeprecatedSubject
@@ -18,6 +19,7 @@ class LoginController {
   final String CURRENT_USER = "aaf.vhr.LoginController.CURRENT_USER"
   final String SSO_URL = "aaf.vhr.LoginController.SSO_URL"
   final String NEW_TOTP_KEY = "aaf.vhr.LoginController.NEW_TOTP_KEY"
+  final String UAPPROVE_CONSENT_REVOKE = "aaf.vhr.LoginController.UAPPROVE_CONSENT_REVOKE"
 
   def loginService
 
@@ -70,6 +72,11 @@ class LoginController {
       session.setAttribute(FAILED_USER, managedSubjectInstance.id)
       redirect action:"index"
       return
+    }
+
+    // if the login form had the uApprove checkbox checked, save it for later
+    if (params.uApproveConsentRevocation) {
+        session.setAttribute(UAPPROVE_CONSENT_REVOKE, params.uApproveConsentRevocation)
     }
 
     session.setAttribute(CURRENT_USER, managedSubjectInstance.id)
@@ -215,6 +222,12 @@ class LoginController {
     if(!redirectURL) {
       log.error "No redirectURL set for login, redirecting to oops"
       return createLink(action: 'oops')
+    }
+    // check for uApprove attribute release consent revocation checkbox
+    if(session.getAttribute(UAPPROVE_CONSENT_REVOKE)) {
+      redirectURL = redirectURL + (redirectURL.indexOf('?')>=0 ? "&" : "?" ) +
+          "uApprove.consent-revocation=" + 
+          URLEncoder.encode(session.getAttribute(UAPPROVE_CONSENT_REVOKE))
     }
 
     session.removeAttribute(CURRENT_USER)

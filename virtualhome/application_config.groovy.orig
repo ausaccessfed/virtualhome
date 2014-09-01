@@ -92,6 +92,7 @@ aaf {
       path = '/'
       validity_period_minutes = 2
       require_captcha_after_tries = 2
+      uApprove_consent_revocation = false
     }
   }
   base {
