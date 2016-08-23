@@ -51,6 +51,8 @@ import com.google.common.base.Predicates;
 import com.google.common.base.Strings;
 import com.google.common.collect.Collections2;
 
+import aaf.vhr.idp.VhrSessionValidator;
+
 /**
  * Extracts authentication information from the request and returns it via the IdP's external authentication
  * interface.
@@ -100,6 +102,12 @@ public class VhrRemoteUserAuthServlet extends HttpServlet {
 
     /** Header to check for authentication method strings. */
     @Nullable @NotEmpty private String authnMethodHeader;
+
+    // VHR-specific attributes
+    final String SSO_COOKIE_NAME = "_vh_l1";
+
+    private String vhrLoginEndpoint;
+    private VhrSessionValidator vhrSessionValidator;
 
     /** Constructor. */
     public VhrRemoteUserAuthServlet() {
@@ -199,6 +207,17 @@ public class VhrRemoteUserAuthServlet extends HttpServlet {
         if (authnMethodHeader != null) {
             log.info("RemoteUserAuthServlet will check for authentication methods in header: {}", authnMethodHeader);
         }
+
+        // VHR-specific initalization
+        vhrLoginEndpoint = config.getInitParameter("loginEndpoint");
+        String apiServer = config.getInitParameter("apiServer");
+        String apiEndpoint = config.getInitParameter("apiEndpoint");
+        String apiToken = config.getInitParameter("apiToken");
+        String apiSecret = config.getInitParameter("apiSecret");
+        String requestingHost = config.getInitParameter("requestingHost");
+
+        vhrSessionValidator = new VhrSessionValidator(apiServer, apiEndpoint, apiToken, apiSecret, requestingHost);
+
     }
 
 // Checkstyle: MethodLength OFF
