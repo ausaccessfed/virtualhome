@@ -14,12 +14,8 @@ import javax.servlet.http.HttpServletResponse;
 
 import org.apache.commons.codec.EncoderException;
 import org.apache.commons.codec.net.URLCodec;
-import org.opensaml.util.storage.StorageService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import edu.internet2.middleware.shibboleth.idp.authn.LoginContext;
-import edu.internet2.middleware.shibboleth.idp.util.HttpServletHelper;
 
 import aaf.vhr.idp.VhrSessionValidator;
 
@@ -50,9 +46,7 @@ public class VhrFilter implements Filter {
 		}
 		
 		URLCodec codec = new URLCodec();
-		StorageService storageService = HttpServletHelper.getStorageService(req.getServletContext());
-		LoginContext loginContext = HttpServletHelper.getLoginContext(storageService, req.getServletContext(), request);
-		String relyingParty = loginContext.getRelyingPartyId();
+		String relyingParty = (String)req.getAttribute("relyingParty");
 		
 		// Attempt to locate VHR SessionID
 		String vhrSessionID = null;
