@@ -63,7 +63,7 @@ public class VhrFilter implements Filter {
 			log.debug ("Relying party which initiated the SSO request was: {}", relyingParty);
 			
 			try {
-				response.sendRedirect(String.format(vhrLoginEndpoint, codec.encode(request.getRequestURL().toString()), codec.encode(relyingParty)));
+				response.sendRedirect(String.format(vhrLoginEndpoint, codec.encode(request.getRequestURL().toString()+(request.getQueryString()!=null ? '?' + request.getQueryString() : "")), codec.encode(relyingParty)));
 			} catch (EncoderException e) {
 				log.error ("Could not encode VHR redirect params");
 				throw new IOException(e);
@@ -85,7 +85,7 @@ public class VhrFilter implements Filter {
 		
 		try {
 			log.info("Failed to establish validity for {} vhrSessionID.", req.getRemoteHost());
-			response.sendRedirect(String.format(vhrLoginEndpoint, codec.encode(request.getRequestURL().toString()), codec.encode(relyingParty)));
+			response.sendRedirect(String.format(vhrLoginEndpoint, codec.encode(request.getRequestURL().toString()+(request.getQueryString()!=null ? '?' + request.getQueryString() : "")), codec.encode(relyingParty)));
 		} catch (EncoderException e) {
 			log.error ("Could not encode VHR redirect params after failing to establish validity");
 			throw new IOException(e);
