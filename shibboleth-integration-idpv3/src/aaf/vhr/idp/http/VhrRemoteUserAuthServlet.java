@@ -30,9 +30,11 @@ import javax.annotation.Nullable;
 import javax.security.auth.Subject;
 import javax.servlet.ServletConfig;
 import javax.servlet.ServletException;
+import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+import javax.servlet.http.HttpSession;
 
 import net.shibboleth.idp.authn.AuthenticationFlowDescriptor;
 import net.shibboleth.idp.authn.ExternalAuthentication;
@@ -44,6 +46,8 @@ import net.shibboleth.utilities.java.support.annotation.constraint.NotEmpty;
 import net.shibboleth.utilities.java.support.primitive.StringSupport;
 
 import org.opensaml.profile.context.ProfileRequestContext;
+import org.apache.commons.codec.EncoderException;
+import org.apache.commons.codec.net.URLCodec;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -105,6 +109,8 @@ public class VhrRemoteUserAuthServlet extends HttpServlet {
 
     // VHR-specific attributes
     final String SSO_COOKIE_NAME = "_vh_l1";
+
+    final String EXTERNAL_AUTH_KEY_ATTR_NAME = "external_auth_session_key";
 
     private String vhrLoginEndpoint;
     private VhrSessionValidator vhrSessionValidator;
@@ -227,7 +233,8 @@ public class VhrRemoteUserAuthServlet extends HttpServlet {
             throws ServletException, IOException {
 
         try {
-            final String key = ExternalAuthentication.startExternalAuthentication(httpRequest);
+            String key = ExternalAuthentication.startExternalAuthentication(httpRequest);
+            // TODO: try avoiding this call if we are to load a key instead
 
             // Check for a Subject, in which case the rest is skipped.
             if (subjectAttribute != null) {
@@ -270,6 +277,69 @@ public class VhrRemoteUserAuthServlet extends HttpServlet {
                         break;
                     }
                 }
+            }
+
+            if (username != null) {
+                log.info("Found username {} already set by previous filter or webserver module. Disabling VHR authentication process.", httpRequest.getRemoteUser());
+            } else {
+                log.debug("No username found so far (correct). Starting VHR Authentication...");
+
+                URLCodec codec = new URLCodec();
+                String relyingParty = (String)httpRequest.getAttribute("relyingParty");
+
+                // Attempt to locate VHR SessionID
+                String vhrSessionID = null;
+                Cookie[] cookies = httpRequest.getCookies();
+                for(Cookie cookie : cookies) {
+                        if(cookie.getName().equals(SSO_COOKIE_NAME)) {
+                                vhrSessionID = cookie.getValue();
+                                break;
+                        }
+                }
+
+                if(vhrSessionID == null) {
+                        log.info("No vhrSessionID found from {}. Directing to VHR authentication process.", httpRequest.getRemoteHost());
+                        log.debug ("Relying party which initiated the SSO request was: {}", relyingParty);
+                        // NEW: save session *key*
+                        HttpSession hs = httpRequest.getSession(true);
+                        hs.setAttribute(EXTERNAL_AUTH_KEY_ATTR_NAME, key);
+
+
+                        try {
+                                httpResponse.sendRedirect(String.format(vhrLoginEndpoint, codec.encode(httpRequest.getRequestURL().toString()+(httpRequest.getQueryString()!=null ? '?' + httpRequest.getQueryString() : "")), codec.encode(relyingParty)));
+                        } catch (EncoderException e) {
+                                log.error ("Could not encode VHR redirect params");
+                                throw new IOException(e);
+                        }
+                        return; // we issued a redirect - return now
+                } else {
+                        // NEW: load session *key*
+                        HttpSession hs = httpRequest.getSession(true);
+                        if (hs != null) {
+                           String old_key = key; // use if something else fails
+                           key = (String)hs.getAttribute(EXTERNAL_AUTH_KEY_ATTR_NAME);
+                        };
+                }
+                // TODO: check login: we are using the right key when retrying...
+
+                log.info("Found vhrSessionID from {}. Establishing validity.", httpRequest.getRemoteHost());
+                username = vhrSessionValidator.validateSession(vhrSessionID);
+
+                if(username != null) {
+                        log.info("Established validity for {}, setting username to {}", httpRequest.getRemoteHost(), username);
+                } else try {
+                        log.info("Failed to establish validity for {} vhrSessionID.", httpRequest.getRemoteHost());
+                        // NEW: save session *key*
+                        HttpSession hs = httpRequest.getSession(true);
+                        hs.setAttribute(EXTERNAL_AUTH_KEY_ATTR_NAME, key);
+
+                        httpResponse.sendRedirect(String.format(vhrLoginEndpoint, codec.encode(httpRequest.getRequestURL().toString()+(httpRequest.getQueryString()!=null ? '?' + httpRequest.getQueryString() : "")), codec.encode(relyingParty)));
+                        return; // we issued a redirect - return now
+                } catch (EncoderException e) {
+                        log.error ("Could not encode VHR redirect params after failing to establish validity");
+                        throw new IOException(e);
+                }
+
             }
 
             if (username == null) {
