@@ -26,20 +26,22 @@ dependencies {
   compile 'org.apache.tomcat:tomcat-servlet-api:7.0.42'
 
   [
-    'edu.internet2.middleware:shibboleth-identityprovider:2.4.0',
-    'org.opensaml:opensaml:2.6.0',
-    'org.opensaml:openws:1.5.0',
-    'org.opensaml:xmltooling:1.4.0'
+    'net.shibboleth.idp:idp-authn-api:3.2.1',
+    'net.shibboleth.utilities:java-support:7.2.0',
+    'org.opensaml:opensaml-profile-api:3.2.0',
+    'org.opensaml:opensaml-messaging-api:3.2.0',
   ].each {
     compile(it) {
       transitive = false
     }
   }
+  compile 'com.google.guava:guava:18.0'
+  compile 'com.google.code.findbugs:jsr305:3.0.0'
 
-  compile 'commons-codec:commons-codec:1.8'
-  compile 'commons-lang:commons-lang:2.6'
-  compile 'org.apache.httpcomponents:httpcore:4.1'
-  compile 'org.apache.httpcomponents:httpclient:4.2.5'
-  compile 'com.googlecode.json-simple:json-simple:1.1'
-  compile 'org.slf4j:slf4j-api:1.7.5'
+  compile 'commons-codec:commons-codec:1.10'
+  compile 'commons-lang:commons-lang:2.4'
+  compile 'org.apache.httpcomponents:httpcore:4.3.3'
+  compile 'org.apache.httpcomponents:httpclient:4.3.6'
+  compile 'com.googlecode.json-simple:json-simple:1.1.1'
+  compile 'org.slf4j:slf4j-api:1.7.12'
 }
