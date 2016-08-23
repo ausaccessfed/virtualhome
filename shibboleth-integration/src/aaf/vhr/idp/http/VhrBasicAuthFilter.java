@@ -11,7 +11,7 @@ import javax.servlet.ServletResponse;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
-import org.apache.commons.codec.Charsets;
+import java.nio.charset.StandardCharsets;
 import org.apache.commons.codec.binary.Base64;
 import org.apache.commons.lang.StringUtils;
 import org.slf4j.Logger;
@@ -42,7 +42,7 @@ public class VhrBasicAuthFilter implements Filter {
       log.info("Attempting to establish session via Basic Auth");
       log.debug("WWW-Authenticate: " + authorization);
 
-      final String[] credentials = StringUtils.split( new String( Base64.decodeBase64( authorization.substring( authorization.indexOf(" ") ) ), Charsets.UTF_8 ), ':' );
+      final String[] credentials = StringUtils.split( new String( Base64.decodeBase64( authorization.substring( authorization.indexOf(" ") ) ), StandardCharsets.UTF_8 ), ':' );
 
       if ( credentials.length == 2 ) {
     	final String login = credentials[0];
