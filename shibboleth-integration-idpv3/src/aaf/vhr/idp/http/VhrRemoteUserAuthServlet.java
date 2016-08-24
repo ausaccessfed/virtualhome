@@ -55,6 +55,7 @@ public class VhrRemoteUserAuthServlet extends HttpServlet {
     final String SSO_COOKIE_NAME = "_vh_l1";
 
     final String EXTERNAL_AUTH_KEY_ATTR_NAME = "external_auth_session_key";
+    final String REDIRECT_REQ_PARAM_NAME = "vhr.redir";
 
     private String vhrLoginEndpoint;
     private VhrSessionValidator vhrSessionValidator;
@@ -84,78 +85,77 @@ public class VhrRemoteUserAuthServlet extends HttpServlet {
             throws ServletException, IOException {
 
         try {
-            String key = ExternalAuthentication.startExternalAuthentication(httpRequest);
-            // TODO: try avoiding this call if we are to load a key instead
+            // key to ExternalAuthentication session
+            String key = null;
+            boolean isVhrReturn = false;
+
+            if (httpRequest.getParameter(REDIRECT_REQ_PARAM_NAME) != null) {
+                // we have come back from the VHR
+                isVhrReturn = true;
+                HttpSession hs = httpRequest.getSession();
+                if (hs != null && hs.getAttribute(EXTERNAL_AUTH_KEY_ATTR_NAME) != null ) {
+                   key = (String)hs.getAttribute(EXTERNAL_AUTH_KEY_ATTR_NAME);
+                   // remove the attribute from the session so that we do not attempt to reuse it...
+                   hs.removeAttribute(EXTERNAL_AUTH_KEY_ATTR_NAME);
+                };
+            } else {
+                key = ExternalAuthentication.startExternalAuthentication(httpRequest);
+            };
+
+            if (key == null) {
+                log.error("No ExternalAuthentication sesssion key found");
+                throw new ServletException("No ExternalAuthentication sesssion key found");
+            };
+            // we now have a key - either:
+            // * we started new authentication
+            // * or we have returned from VHR and loaded the key from the HttpSession
 
             String username = null;
 
-            if (username != null) {
-                log.info("Found username {} already set by previous filter or webserver module. Disabling VHR authentication process.", httpRequest.getRemoteUser());
-            } else {
-                log.debug("No username found so far (correct). Starting VHR Authentication...");
+            // We may have a cookie - either as part of return or from previous session
+            // Attempt to locate VHR SessionID
+            String vhrSessionID = null;
+            Cookie[] cookies = httpRequest.getCookies();
+            for(Cookie cookie : cookies) {
+                if(cookie.getName().equals(SSO_COOKIE_NAME)) {
+                    vhrSessionID = cookie.getValue();
+                    break;
+                }
+            }
+
+            if (vhrSessionID != null) {
+                log.info("Found vhrSessionID from {}. Establishing validity.", httpRequest.getRemoteHost());
+                username = vhrSessionValidator.validateSession(vhrSessionID);
+            };
+
+            // If we do not have a username yet (no Vhr session cookie or did not validate),
+            // we redirect to VHR - but only if we are not returning from the VHR
+            // Reason: (i) we do not want to loop and (ii) we do not have the full context otherwise initialized by
+            // ExternalAuthentication.startExternalAuthentication()
+            if ( username == null && !isVhrReturn ) {
 
                 URLCodec codec = new URLCodec();
                 String relyingParty = (String)httpRequest.getAttribute("relyingParty");
 
-                // Attempt to locate VHR SessionID
-                String vhrSessionID = null;
-                Cookie[] cookies = httpRequest.getCookies();
-                for(Cookie cookie : cookies) {
-                        if(cookie.getName().equals(SSO_COOKIE_NAME)) {
-                                vhrSessionID = cookie.getValue();
-                                break;
-                        }
-                }
+                log.info("No vhrSessionID found from {}. Directing to VHR authentication process.", httpRequest.getRemoteHost());
+                log.debug("Relying party which initiated the SSO request was: {}", relyingParty);
 
-                if(vhrSessionID == null) {
-                        log.info("No vhrSessionID found from {}. Directing to VHR authentication process.", httpRequest.getRemoteHost());
-                        log.debug ("Relying party which initiated the SSO request was: {}", relyingParty);
-                        // NEW: save session *key*
-                        HttpSession hs = httpRequest.getSession(true);
-                        hs.setAttribute(EXTERNAL_AUTH_KEY_ATTR_NAME, key);
+                // save session *key*
+                HttpSession hs = httpRequest.getSession(true);
+                hs.setAttribute(EXTERNAL_AUTH_KEY_ATTR_NAME, key);
 
-
-                        try {
-                                httpResponse.sendRedirect(String.format(vhrLoginEndpoint, codec.encode(httpRequest.getRequestURL().toString()+(httpRequest.getQueryString()!=null ? '?' + httpRequest.getQueryString() : "")), codec.encode(relyingParty)));
-                        } catch (EncoderException e) {
-                                log.error ("Could not encode VHR redirect params");
-                                throw new IOException(e);
-                        }
-                        return; // we issued a redirect - return now
-                } else {
-                        // NEW: load session *key*
-                        HttpSession hs = httpRequest.getSession(true);
-                        if (hs != null && hs.getAttribute(EXTERNAL_AUTH_KEY_ATTR_NAME) != null ) {
-                           String old_key = key; // use if something else fails
-                           key = (String)hs.getAttribute(EXTERNAL_AUTH_KEY_ATTR_NAME);
-                           // remove the attribute from the session so that we do not attempt to reuse it...
-                           hs.removeAttribute(EXTERNAL_AUTH_KEY_ATTR_NAME);
-                        };
-                }
-                // TODO: check login: we are using the right key when retrying...
-
-                log.info("Found vhrSessionID from {}. Establishing validity.", httpRequest.getRemoteHost());
-                username = vhrSessionValidator.validateSession(vhrSessionID);
-
-                if(username != null) {
-                        log.info("Established validity for {}, setting username to {}", httpRequest.getRemoteHost(), username);
-                } else try {
-                        log.info("Failed to establish validity for {} vhrSessionID.", httpRequest.getRemoteHost());
-                        // NEW: save session *key*
-                        HttpSession hs = httpRequest.getSession(true);
-                        hs.setAttribute(EXTERNAL_AUTH_KEY_ATTR_NAME, key);
-
-                        httpResponse.sendRedirect(String.format(vhrLoginEndpoint, codec.encode(httpRequest.getRequestURL().toString()+(httpRequest.getQueryString()!=null ? '?' + httpRequest.getQueryString() : "")), codec.encode(relyingParty)));
-                        return; // we issued a redirect - return now
+                try {
+                    httpResponse.sendRedirect(String.format(vhrLoginEndpoint, codec.encode(httpRequest.getRequestURL().toString()+"?"+REDIRECT_REQ_PARAM_NAME+"=true"), codec.encode(relyingParty)));
                 } catch (EncoderException e) {
-                        log.error ("Could not encode VHR redirect params after failing to establish validity");
-                        throw new IOException(e);
+                    log.error ("Could not encode VHR redirect params");
+                    throw new IOException(e);
                 }
-
-            }
+                return; // we issued a redirect - return now
+            };
 
             if (username == null) {
-                log.info("User identity not found in request");
+                log.warn("VirtualHome authentication failed: no username received");
+                httpRequest.setAttribute(ExternalAuthentication.AUTHENTICATION_ERROR_KEY, "VirtualHome authentication failed: no username received");
                 ExternalAuthentication.finishExternalAuthentication(key, httpRequest, httpResponse);
                 return;
             }
