@@ -60,6 +60,9 @@ public class VhrRemoteUserAuthServlet extends HttpServlet {
     private String vhrLoginEndpoint;
     private VhrSessionValidator vhrSessionValidator;
 
+    /** Name of the request parameter that would indicate the user wants to revoke consent */
+    private String consentRevocationParamName = "_shib_idp_revokeConsent";
+
 // Checkstyle: CyclomaticComplexity OFF
     /** {@inheritDoc} */
     @Override
@@ -73,6 +76,10 @@ public class VhrRemoteUserAuthServlet extends HttpServlet {
         String apiToken = config.getInitParameter("apiToken");
         String apiSecret = config.getInitParameter("apiSecret");
         String requestingHost = config.getInitParameter("requestingHost");
+
+        // Consent revocation parameter name: override default if set
+        String crpn = config.getInitParameter("consentRevocationParamName");
+        if (crpn != null) { consentRevocationParamName = crpn; };
 
         vhrSessionValidator = new VhrSessionValidator(apiServer, apiEndpoint, apiToken, apiSecret, requestingHost);
 
@@ -162,7 +169,7 @@ public class VhrRemoteUserAuthServlet extends HttpServlet {
 
             // check if consent revocation was requested
             // TODO: make the parameter name configurable (or define a constant)
-            String consentRevocationParam = httpRequest.getParameter("uApprove.consent-revocation");
+            String consentRevocationParam = httpRequest.getParameter(consentRevocationParamName);
             if (consentRevocationParam != null) {
                 // we should pass on the request for consent revocation
                 final ProfileRequestContext prc =
