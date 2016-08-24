@@ -315,9 +315,11 @@ public class VhrRemoteUserAuthServlet extends HttpServlet {
                 } else {
                         // NEW: load session *key*
                         HttpSession hs = httpRequest.getSession(true);
-                        if (hs != null) {
+                        if (hs != null && hs.getAttribute(EXTERNAL_AUTH_KEY_ATTR_NAME) != null ) {
                            String old_key = key; // use if something else fails
                            key = (String)hs.getAttribute(EXTERNAL_AUTH_KEY_ATTR_NAME);
+                           // remove the attribute from the session so that we do not attempt to reuse it...
+                           hs.removeAttribute(EXTERNAL_AUTH_KEY_ATTR_NAME);
                         };
                 }
                 // TODO: check login: we are using the right key when retrying...
