@@ -41,6 +41,7 @@ import net.shibboleth.idp.authn.ExternalAuthentication;
 import net.shibboleth.idp.authn.ExternalAuthenticationException;
 import net.shibboleth.idp.authn.context.AuthenticationContext;
 import net.shibboleth.idp.authn.principal.UsernamePrincipal;
+import net.shibboleth.idp.consent.context.ConsentManagementContext;
 import net.shibboleth.utilities.java.support.annotation.constraint.NonnullElements;
 import net.shibboleth.utilities.java.support.annotation.constraint.NotEmpty;
 import net.shibboleth.utilities.java.support.primitive.StringSupport;
@@ -349,6 +350,18 @@ public class VhrRemoteUserAuthServlet extends HttpServlet {
                 ExternalAuthentication.finishExternalAuthentication(key, httpRequest, httpResponse);
                 return;
             }
+
+            // check if consent revocation was requested
+            // TODO: make the parameter name configurable (or define a constant)
+            String consentRevocationParam = httpRequest.getParameter("uApprove.consent-revocation");
+            if (consentRevocationParam != null) {
+                // we should pass on the request for consent revocation
+                final ProfileRequestContext prc =
+                        ExternalAuthentication.getProfileRequestContext(key, httpRequest);
+                final ConsentManagementContext consentCtx = prc.getSubcontext(ConsentManagementContext.class, true);
+                log.debug("Consent revocation request received, setting revokeConsent in consentCtx");
+                consentCtx.setRevokeConsent(consentRevocationParam.equalsIgnoreCase("true"));
+            };
 
             if (authnMethodHeader != null) {
                 // Check for authentication methods.

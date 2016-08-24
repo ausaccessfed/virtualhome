@@ -27,6 +27,7 @@ dependencies {
 
   [
     'net.shibboleth.idp:idp-authn-api:3.2.1',
+    'net.shibboleth.idp:idp-consent-api:3.2.1',
     'net.shibboleth.utilities:java-support:7.2.0',
     'org.opensaml:opensaml-profile-api:3.2.0',
     'org.opensaml:opensaml-messaging-api:3.2.0',
