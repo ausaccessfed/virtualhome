@@ -24,7 +24,7 @@ public class VhrBasicAuthFilter implements Filter {
   private String realm;
   private VhrBasicAuthValidator vhrBasicAuthValidator;
 
-  Logger log = LoggerFactory.getLogger("aaf.vhr.idp.http.VhrFilter");
+  Logger log = LoggerFactory.getLogger("aaf.vhr.idp.http.VhrBasicAuthFilter");
 
   @Override
   public void destroy() {
