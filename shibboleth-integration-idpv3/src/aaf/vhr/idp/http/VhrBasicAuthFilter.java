@@ -52,8 +52,8 @@ public class VhrBasicAuthFilter implements Filter {
 
         if(remoteUser != null) {
           log.info ("Confirmed supplied credentials for " + credentials[0] + ", VH confirmed remoteUser value of " + remoteUser);
-          VhrRequestWrapper vhrRequestWrapper = new VhrRequestWrapper(request, remoteUser);
-          chain.doFilter(vhrRequestWrapper, response);
+          request.setAttribute("VHRUsername",remoteUser);
+          chain.doFilter(request, response);
 
           return;
         }
