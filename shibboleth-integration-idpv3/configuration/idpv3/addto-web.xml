@@ -26,6 +26,10 @@
         <param-name>requestingHost</param-name>
         <param-value><!-- VHR SERVER IP --></param-value>
       </init-param>
+      <init-param>
+        <param-name>usernameRequestAttributeName</param-name>
+        <param-value>VHRUsername</param-value>
+      </init-param>
     </filter>
     <filter-mapping>
       <filter-name>VhrBasicAuthFilter</filter-name>
