@@ -168,7 +168,6 @@ public class VhrRemoteUserAuthServlet extends HttpServlet {
             }
 
             // check if consent revocation was requested
-            // TODO: make the parameter name configurable (or define a constant)
             String consentRevocationParam = httpRequest.getParameter(consentRevocationParamName);
             if (consentRevocationParam != null) {
                 // we should pass on the request for consent revocation

@@ -42,7 +42,6 @@
       <init-param>
         <param-name>loginEndpoint</param-name>
         <param-value><!-- https://VHR server address -->/login?ssourl=%s&amp;relyingparty=%s</param-value>
-        <param-value>https://tkrvirdev01.its.auckland.ac.nz/login?ssourl=%s&amp;relyingparty=%s</param-value>
       </init-param>
       <init-param>
         <param-name>apiServer</param-name>
