@@ -41,7 +41,7 @@
       <servlet-class>aaf.vhr.idp.http.VhrRemoteUserAuthServlet</servlet-class>
       <init-param>
         <param-name>loginEndpoint</param-name>
-        <param-value><!-- https://VHR server address -->/login?ssourl=%s&amp;relyingparty=%s</param-value>
+        <param-value><!-- https://VHR server address -->/login?ssourl=%s&amp;relyingparty=%s&amp;servicename=%s</param-value>
       </init-param>
       <init-param>
         <param-name>apiServer</param-name>

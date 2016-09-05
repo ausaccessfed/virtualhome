@@ -28,9 +28,11 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
 
+import net.shibboleth.idp.authn.context.AuthenticationContext;
 import net.shibboleth.idp.authn.ExternalAuthentication;
 import net.shibboleth.idp.authn.ExternalAuthenticationException;
 import net.shibboleth.idp.consent.context.ConsentManagementContext;
+import net.shibboleth.idp.ui.context.RelyingPartyUIContext;
 
 import org.opensaml.profile.context.ProfileRequestContext;
 import org.apache.commons.codec.EncoderException;
@@ -143,16 +145,28 @@ public class VhrRemoteUserAuthServlet extends HttpServlet {
 
                 URLCodec codec = new URLCodec();
                 String relyingParty = (String)httpRequest.getAttribute("relyingParty");
+                String serviceName = "";
 
                 log.info("No vhrSessionID found from {}. Directing to VHR authentication process.", httpRequest.getRemoteHost());
                 log.debug("Relying party which initiated the SSO request was: {}", relyingParty);
+
+                // try getting a RelyingPartyUIContext
+                // we should pass on the request for consent revocation
+                final ProfileRequestContext prc =
+                        ExternalAuthentication.getProfileRequestContext(key, httpRequest);
+                final RelyingPartyUIContext rpuiCtx = prc.getSubcontext(AuthenticationContext.class,true).
+                        getSubcontext(RelyingPartyUIContext.class, false);
+                if (rpuiCtx != null) {
+                    serviceName = rpuiCtx.getServiceName();
+                    log.debug("RelyingPartyUIContext received, ServiceName is {}", serviceName);
+                };
 
                 // save session *key*
                 HttpSession hs = httpRequest.getSession(true);
                 hs.setAttribute(EXTERNAL_AUTH_KEY_ATTR_NAME, key);
 
                 try {
-                    httpResponse.sendRedirect(String.format(vhrLoginEndpoint, codec.encode(httpRequest.getRequestURL().toString()+"?"+REDIRECT_REQ_PARAM_NAME+"=true"), codec.encode(relyingParty)));
+                    httpResponse.sendRedirect(String.format(vhrLoginEndpoint, codec.encode(httpRequest.getRequestURL().toString()+"?"+REDIRECT_REQ_PARAM_NAME+"=true"), codec.encode(relyingParty), codec.encode(serviceName)));
                 } catch (EncoderException e) {
                     log.error ("Could not encode VHR redirect params");
                     throw new IOException(e);
