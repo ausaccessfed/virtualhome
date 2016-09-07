@@ -103,6 +103,8 @@ public class VhrRemoteUserAuthServlet extends HttpServlet {
             boolean isVhrReturn = false;
             boolean isForceAuthn = false;
             DateTime authnStart = null; // when this authentication started at the IdP
+            // array to use as return parameter when calling VhrSessionValidator
+            DateTime authnInstantArr[] = new DateTime[1];
 
             if (httpRequest.getParameter(REDIRECT_REQ_PARAM_NAME) != null) {
                 // we have come back from the VHR
@@ -173,7 +175,7 @@ public class VhrRemoteUserAuthServlet extends HttpServlet {
 
             if (vhrSessionID != null) {
                 log.info("Found vhrSessionID from {}. Establishing validity.", httpRequest.getRemoteHost());
-                username = vhrSessionValidator.validateSession(vhrSessionID, ( isForceAuthn ? authnStart : null));
+                username = vhrSessionValidator.validateSession(vhrSessionID, ( isForceAuthn ? authnStart : null), authnInstantArr);
             };
 
             // If we do not have a username yet (no Vhr session cookie or did not validate),
@@ -231,6 +233,12 @@ public class VhrRemoteUserAuthServlet extends HttpServlet {
                 final ConsentManagementContext consentCtx = prc.getSubcontext(ConsentManagementContext.class, true);
                 log.debug("Consent revocation request received, setting revokeConsent in consentCtx");
                 consentCtx.setRevokeConsent(consentRevocationParam.equalsIgnoreCase("true"));
+            };
+
+            // Set authnInstant to timestamp returned by VHR
+            if (authnInstantArr[0] != null) {
+                log.debug("Response from VHR includes authenticationInstant time {}, passing this back to IdP", authnInstantArr[0]);
+                httpRequest.setAttribute(ExternalAuthentication.AUTHENTICATION_INSTANT_KEY, authnInstantArr[0]);
             };
 
             httpRequest.setAttribute(ExternalAuthentication.PRINCIPAL_NAME_KEY, username);

@@ -51,10 +51,10 @@ public class VhrSessionValidator {
 	}
 	
 	public String validateSession(String vhrSessionID) {
-		return validateSession(vhrSessionID, null);
+		return validateSession(vhrSessionID, null, null);
 	}
 
-	public String validateSession(String vhrSessionID, DateTime notBefore) {
+	public String validateSession(String vhrSessionID, DateTime notBefore, DateTime authnInstantArr[]) {
 		HttpClient httpClient = null;
 		HttpGet request = null;
 		HttpResponse response = null;
@@ -108,6 +108,10 @@ public class VhrSessionValidator {
 					
 					if(remoteUser != null) {
 						log.info("VHR API advises sessionID {} belongs to user {}, setting for REMOTE_USER.", vhrSessionID, remoteUser);
+						if (jtAuthnInstant != null && authnInstantArr != null && authnInstantArr.length>=1) {
+							log.info("VHR API sets authnInstant to {}.", jtAuthnInstant);
+							authnInstantArr[0]=jtAuthnInstant;
+						};
 						return remoteUser;
 					}
 				}
