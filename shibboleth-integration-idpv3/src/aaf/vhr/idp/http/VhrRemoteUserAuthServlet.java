@@ -58,10 +58,9 @@ public class VhrRemoteUserAuthServlet extends HttpServlet {
     // VHR-specific attributes
     final String SSO_COOKIE_NAME = "_vh_l1";
 
-    final String EXTERNAL_AUTH_KEY_ATTR_NAME = "aaf.vhr.idp.http.VhrRemoteUserAuthServlet.externalAuthenticationSessionKey";
-    final String IS_FORCE_AUTHN_ATTR_NAME = "aaf.vhr.idp.http.VhrRemoteUserAuthServlet.isForceAuthn";
-    final String AUTHN_INIT_INSTANT_ATTR_NAME = "aaf.vhr.idp.http.VhrRemoteUserAuthServlet.authnInitInstant";
-    final String REDIRECT_REQ_PARAM_NAME = "vhr.redir";
+    final String IS_FORCE_AUTHN_ATTR_NAME = "aaf.vhr.idp.http.VhrRemoteUserAuthServlet.isForceAuthn.";
+    final String AUTHN_INIT_INSTANT_ATTR_NAME = "aaf.vhr.idp.http.VhrRemoteUserAuthServlet.authnInitInstant.";
+    final String REDIRECT_REQ_PARAM_NAME = "vhr.key";
 
     private String vhrLoginEndpoint;
     private VhrSessionValidator vhrSessionValidator;
@@ -109,21 +108,17 @@ public class VhrRemoteUserAuthServlet extends HttpServlet {
             if (httpRequest.getParameter(REDIRECT_REQ_PARAM_NAME) != null) {
                 // we have come back from the VHR
                 isVhrReturn = true;
+                key = httpRequest.getParameter(REDIRECT_REQ_PARAM_NAME);
                 HttpSession hs = httpRequest.getSession();
-                if (hs != null && hs.getAttribute(EXTERNAL_AUTH_KEY_ATTR_NAME) != null ) {
-                   key = (String)hs.getAttribute(EXTERNAL_AUTH_KEY_ATTR_NAME);
-                   // remove the attribute from the session so that we do not attempt to reuse it...
-                   hs.removeAttribute(EXTERNAL_AUTH_KEY_ATTR_NAME);
-                };
 
-                if (hs != null && hs.getAttribute(AUTHN_INIT_INSTANT_ATTR_NAME) != null ) {
-                   authnStart = (DateTime)hs.getAttribute(AUTHN_INIT_INSTANT_ATTR_NAME);
+                if (hs != null && hs.getAttribute(AUTHN_INIT_INSTANT_ATTR_NAME + key) != null ) {
+                   authnStart = (DateTime)hs.getAttribute(AUTHN_INIT_INSTANT_ATTR_NAME + key);
                    // remove the attribute from the session so that we do not attempt to reuse it...
                    hs.removeAttribute(AUTHN_INIT_INSTANT_ATTR_NAME);
                 };
 
-                if (hs != null && hs.getAttribute(IS_FORCE_AUTHN_ATTR_NAME) != null ) {
-                   isForceAuthn = ((Boolean)hs.getAttribute(IS_FORCE_AUTHN_ATTR_NAME)).booleanValue();
+                if (hs != null && hs.getAttribute(IS_FORCE_AUTHN_ATTR_NAME + key) != null ) {
+                   isForceAuthn = ((Boolean)hs.getAttribute(IS_FORCE_AUTHN_ATTR_NAME + key)).booleanValue();
                    // remove the attribute from the session so that we do not attempt to reuse it...
                    hs.removeAttribute(AUTHN_INIT_INSTANT_ATTR_NAME);
                 };
@@ -204,12 +199,14 @@ public class VhrRemoteUserAuthServlet extends HttpServlet {
 
                 // save session *key*
                 HttpSession hs = httpRequest.getSession(true);
-                hs.setAttribute(EXTERNAL_AUTH_KEY_ATTR_NAME, key);
-                hs.setAttribute(IS_FORCE_AUTHN_ATTR_NAME, new Boolean(isForceAuthn));
-                hs.setAttribute(AUTHN_INIT_INSTANT_ATTR_NAME, authnStart);
+                hs.setAttribute(IS_FORCE_AUTHN_ATTR_NAME + key, new Boolean(isForceAuthn));
+                hs.setAttribute(AUTHN_INIT_INSTANT_ATTR_NAME + key, authnStart);
 
                 try {
-                    httpResponse.sendRedirect(String.format(vhrLoginEndpoint, codec.encode(httpRequest.getRequestURL().toString()+"?"+REDIRECT_REQ_PARAM_NAME+"=true"), codec.encode(relyingParty), codec.encode(serviceName)));
+                    httpResponse.sendRedirect(String.format(vhrLoginEndpoint,
+                            codec.encode(httpRequest.getRequestURL().toString()+"?"+REDIRECT_REQ_PARAM_NAME+"="+codec.encode(key)),
+                            codec.encode(relyingParty),
+                            codec.encode(serviceName)));
                 } catch (EncoderException e) {
                     log.error ("Could not encode VHR redirect params");
                     throw new IOException(e);
