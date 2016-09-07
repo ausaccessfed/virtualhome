@@ -37,6 +37,8 @@ import net.shibboleth.idp.ui.context.RelyingPartyUIContext;
 import org.opensaml.profile.context.ProfileRequestContext;
 import org.apache.commons.codec.EncoderException;
 import org.apache.commons.codec.net.URLCodec;
+import org.joda.time.DateTime;
+import org.joda.time.DateTimeZone;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -56,7 +58,9 @@ public class VhrRemoteUserAuthServlet extends HttpServlet {
     // VHR-specific attributes
     final String SSO_COOKIE_NAME = "_vh_l1";
 
-    final String EXTERNAL_AUTH_KEY_ATTR_NAME = "external_auth_session_key";
+    final String EXTERNAL_AUTH_KEY_ATTR_NAME = "aaf.vhr.idp.http.VhrRemoteUserAuthServlet.externalAuthenticationSessionKey";
+    final String IS_FORCE_AUTHN_ATTR_NAME = "aaf.vhr.idp.http.VhrRemoteUserAuthServlet.isForceAuthn";
+    final String AUTHN_INIT_INSTANT_ATTR_NAME = "aaf.vhr.idp.http.VhrRemoteUserAuthServlet.authnInitInstant";
     final String REDIRECT_REQ_PARAM_NAME = "vhr.redir";
 
     private String vhrLoginEndpoint;
@@ -97,6 +101,8 @@ public class VhrRemoteUserAuthServlet extends HttpServlet {
             // key to ExternalAuthentication session
             String key = null;
             boolean isVhrReturn = false;
+            boolean isForceAuthn = false;
+            DateTime authnStart = null; // when this authentication started at the IdP
 
             if (httpRequest.getParameter(REDIRECT_REQ_PARAM_NAME) != null) {
                 // we have come back from the VHR
@@ -107,9 +113,42 @@ public class VhrRemoteUserAuthServlet extends HttpServlet {
                    // remove the attribute from the session so that we do not attempt to reuse it...
                    hs.removeAttribute(EXTERNAL_AUTH_KEY_ATTR_NAME);
                 };
+
+                if (hs != null && hs.getAttribute(AUTHN_INIT_INSTANT_ATTR_NAME) != null ) {
+                   authnStart = (DateTime)hs.getAttribute(AUTHN_INIT_INSTANT_ATTR_NAME);
+                   // remove the attribute from the session so that we do not attempt to reuse it...
+                   hs.removeAttribute(AUTHN_INIT_INSTANT_ATTR_NAME);
+                };
+
+                if (hs != null && hs.getAttribute(IS_FORCE_AUTHN_ATTR_NAME) != null ) {
+                   isForceAuthn = ((Boolean)hs.getAttribute(IS_FORCE_AUTHN_ATTR_NAME)).booleanValue();
+                   // remove the attribute from the session so that we do not attempt to reuse it...
+                   hs.removeAttribute(AUTHN_INIT_INSTANT_ATTR_NAME);
+                };
+
             } else {
+                // starting a new SSO request
                 key = ExternalAuthentication.startExternalAuthentication(httpRequest);
+
+                // check if forceAuthn is set
+                Object forceAuthnAttr = httpRequest.getAttribute(ExternalAuthentication.FORCE_AUTHN_PARAM);
+                if ( forceAuthnAttr != null && forceAuthnAttr instanceof java.lang.Boolean) {
+                    log.debug("Loading foceAuthn value");
+                    isForceAuthn = ((Boolean)forceAuthnAttr).booleanValue();
+                }
+
+                // check if we can see when authentication was initiated
+                final AuthenticationContext authCtx =
+                        ExternalAuthentication.getProfileRequestContext(key, httpRequest).
+                            getSubcontext(AuthenticationContext.class,false);
+                if (authCtx != null) {
+                    log.debug("Authentication initiation is {}", authCtx.getInitiationInstant());
+                    authnStart = new DateTime(authCtx.getInitiationInstant(), DateTimeZone.UTC);
+                    log.debug("AuthnStart is {}", authnStart);
+                };
+
             };
+            log.debug("forceAuthn is {}, authnStart is {}", isForceAuthn, authnStart);
 
             if (key == null) {
                 log.error("No ExternalAuthentication sesssion key found");
@@ -134,7 +173,7 @@ public class VhrRemoteUserAuthServlet extends HttpServlet {
 
             if (vhrSessionID != null) {
                 log.info("Found vhrSessionID from {}. Establishing validity.", httpRequest.getRemoteHost());
-                username = vhrSessionValidator.validateSession(vhrSessionID);
+                username = vhrSessionValidator.validateSession(vhrSessionID, ( isForceAuthn ? authnStart : null));
             };
 
             // If we do not have a username yet (no Vhr session cookie or did not validate),
@@ -164,6 +203,8 @@ public class VhrRemoteUserAuthServlet extends HttpServlet {
                 // save session *key*
                 HttpSession hs = httpRequest.getSession(true);
                 hs.setAttribute(EXTERNAL_AUTH_KEY_ATTR_NAME, key);
+                hs.setAttribute(IS_FORCE_AUTHN_ATTR_NAME, new Boolean(isForceAuthn));
+                hs.setAttribute(AUTHN_INIT_INSTANT_ATTR_NAME, authnStart);
 
                 try {
                     httpResponse.sendRedirect(String.format(vhrLoginEndpoint, codec.encode(httpRequest.getRequestURL().toString()+"?"+REDIRECT_REQ_PARAM_NAME+"=true"), codec.encode(relyingParty), codec.encode(serviceName)));

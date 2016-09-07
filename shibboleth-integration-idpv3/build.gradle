@@ -37,6 +37,7 @@ dependencies {
       transitive = false
     }
   }
+  compile 'joda-time:joda-time:2.9'
   compile 'com.google.guava:guava:18.0'
   compile 'com.google.code.findbugs:jsr305:3.0.0'
 
