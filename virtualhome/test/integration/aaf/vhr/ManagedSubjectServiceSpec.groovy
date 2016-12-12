@@ -220,6 +220,8 @@ class ManagedSubjectServiceSpec extends IntegrationSpec {
     setup:
     def o = Organization.build(active:true)
     def g = Group.build(organization: o, active:true)
+    def et_orig = EmailTemplate.findWhere(name: 'registered_managed_subject')
+    if (et_orig) { et_orig.delete(flush: true) }
     def et = new EmailTemplate(name:'registered_managed_subject', content: 'This is an email for ${managedSubject.cn} telling them to come and complete registration with code ${invitation.inviteCode}').save()
     
     def managedSubjectTestInstance = ManagedSubject.buildWithoutSave(organization:o, group:g)
@@ -387,6 +389,8 @@ class ManagedSubjectServiceSpec extends IntegrationSpec {
     setup:
     def o = Organization.build(active:true)
     def g = Group.build(organization: o, active:true)
+    def et_orig = EmailTemplate.findWhere(name: 'registered_managed_subject')
+    if (et_orig) { et_orig.delete(flush: true) }
     def et = new EmailTemplate(name:'registered_managed_subject', content: 'This is an email for ${managedSubject.cn} telling them to come and complete registration with code ${invitation.inviteCode}').save()
     
     expect:
@@ -450,6 +454,8 @@ class ManagedSubjectServiceSpec extends IntegrationSpec {
     setup:
     def o = Organization.build(active:true)
     def g = Group.build(organization: o, active:true)
+    def et_orig = EmailTemplate.findWhere(name: 'registered_managed_subject')
+    if (et_orig) { et_orig.delete(flush: true) }
     def et = new EmailTemplate(name:'registered_managed_subject', content: 'This is an email for ${managedSubject.cn} telling them to come and complete registration with code ${invitation.inviteCode}').save()
     
     subject.permissions = []
@@ -508,6 +514,8 @@ class ManagedSubjectServiceSpec extends IntegrationSpec {
     setup:
     def o = Organization.build(active:true)
     def g = Group.build(organization: o, active:true)
+    def et_orig = EmailTemplate.findWhere(name: 'registered_managed_subject')
+    if (et_orig) { et_orig.delete(flush: true) }
     def et = new EmailTemplate(name:'registered_managed_subject', content: 'This is an email for ${managedSubject.cn} telling them to come and complete registration with code ${invitation.inviteCode}').save()
 
     subject.permissions = []
@@ -568,6 +576,8 @@ class ManagedSubjectServiceSpec extends IntegrationSpec {
     def g = Group.build(organization: o, active:true)
     def groupRole = Role.build(name:"group:${o.id}:administrators")
 
+    def et_orig = EmailTemplate.findWhere(name: 'deactivated_managed_subject')
+    if (et_orig) { et_orig.delete(flush: true) }
     def et = new EmailTemplate(name:'deactivated_managed_subject', content: 'This is an email for ${managedSubject.cn} telling them that their account was locked. Organisation: ${organizationRole.id}, Role: ${groupRole.id}').save()
     def s = ManagedSubject.build(organization:o, group:g, cn:'Test User', email:'testuser@example.com')
 
