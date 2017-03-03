@@ -7,6 +7,7 @@ import grails.buildtestdata.mixin.Build
 import spock.lang.*
 
 import aaf.base.identity.*
+import aaf.base.SMSDeliveryService
 
 @TestFor(aaf.vhr.LostPasswordController)
 @Build([aaf.vhr.Organization, aaf.vhr.Group, aaf.vhr.ManagedSubject, aaf.base.admin.EmailTemplate, aaf.base.identity.Subject, aaf.base.identity.Role, aaf.vhr.switchch.vho.DeprecatedSubject])
@@ -28,7 +29,7 @@ class LostPasswordControllerSpec extends spock.lang.Specification {
     emailManagerService = Mock(aaf.base.EmailManagerService)
     controller.emailManagerService = emailManagerService
 
-    smsDeliveryService = Mock(aaf.base.SMSDeliveryService)
+    smsDeliveryService = Mock(SMSDeliveryService)
     controller.smsDeliveryService = smsDeliveryService
   }
 
