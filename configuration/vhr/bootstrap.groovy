@@ -17,13 +17,15 @@ String principal = ''
 // This must be kept a secret and known only to the API user
 String apiKey = ''
 
+// Mandatory description field
+String description = 'Shibboleth IdP API Account'
 
 
 
 
 // NO MORE CHANGES BELOW THIS POINT
 
-def apiSubject = new ApiSubject(principal:principal, apiKey:apiKey, enabled:true)
+def apiSubject = new ApiSubject(principal:principal, apiKey:apiKey, enabled:true, description: description)
 if(!apiSubject.save()) {
   apiSubject.errors.each { println it }
   return false

@@ -23,6 +23,7 @@
               <th><g:message encodeAs='HTML' code="label.sharedtoken" /></th>
             </aaf:hasPermission>
             <th><g:message encodeAs='HTML' code="label.functioning" /></th> 
+            <th><g:message encodeAs='HTML' code="label.organization" /></th> 
             <th><g:message encodeAs='HTML' code="label.group" /></th> 
             <th/>
           </tr>
@@ -37,6 +38,7 @@
               <td>${fieldValue(bean: managedSubjectInstance, field: "sharedToken")}</td>
             </aaf:hasPermission>
             <td><g:formatBoolean boolean="${managedSubjectInstance.functioning()}"/></td>
+            <td><g:link action="show" controller="organization" id="${managedSubjectInstance.organization.id}">${fieldValue(bean: managedSubjectInstance, field: "organization.displayName")}</g:link></td>
             <td><g:link action="show" controller="group" id="${managedSubjectInstance.group.id}">${fieldValue(bean: managedSubjectInstance, field: "group.name")}</g:link></td>
             <td><g:link action="show" id="${managedSubjectInstance.id}" class="btn btn-small"><g:message encodeAs='HTML' code="label.view"/></g:link></td>
           </tr>

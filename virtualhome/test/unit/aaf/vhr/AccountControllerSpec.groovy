@@ -14,6 +14,10 @@ import aaf.base.identity.*
 @Build([aaf.vhr.Organization, aaf.vhr.Group, aaf.vhr.ManagedSubject, aaf.base.identity.Subject, aaf.base.identity.Role, aaf.vhr.switchch.vho.DeprecatedSubject])
 @Mock([Organization, Group])
 class AccountControllerSpec extends spock.lang.Specification {
+  def grailsApplication = new org.codehaus.groovy.grails.commons.DefaultGrailsApplication()
+
+  def setup() {
+  }
 
   def 'ensure index provides a view'() {
     when:
@@ -144,7 +148,7 @@ class AccountControllerSpec extends spock.lang.Specification {
 
     then:
     1 * cryptoService.verifyPasswordHash(_ as String, _ as ManagedSubject) >>> false
-    
+
     flash.type == 'error'
     flash.message == 'controllers.aaf.vhr.account.completedetailschange.password.error'
     view == '/account/changedetails'
@@ -158,7 +162,7 @@ class AccountControllerSpec extends spock.lang.Specification {
 
     def managedSubjectTestInstance = ManagedSubject.build(login:'validlogin')
     session.setAttribute(controller.CURRENT_USER, managedSubjectTestInstance.id)
-    
+
     params.currentPassword = 'password'
     params.plainPassword = 'newpassword'
     params.plainPasswordConfirmation = 'newpassword'
@@ -172,7 +176,7 @@ class AccountControllerSpec extends spock.lang.Specification {
     then:
     1 * cryptoService.verifyPasswordHash(_ as String, _ as ManagedSubject) >>> true
     1 * passwordValidationService.validate(_ as ManagedSubject) >>> [[false, ['some.error', 'some.other.error']]]
-    
+
     flash.type == 'error'
     flash.message == 'controllers.aaf.vhr.account.completedetailschange.password.invalid'
     view == '/account/changedetails'
@@ -186,7 +190,7 @@ class AccountControllerSpec extends spock.lang.Specification {
 
     def managedSubjectTestInstance = ManagedSubject.build(login:'validlogin')
     session.setAttribute(controller.CURRENT_USER, managedSubjectTestInstance.id)
-    
+
     params.currentPassword = 'password'
     params.plainPassword = 'newpassword'
     params.plainPasswordConfirmation = 'newpassword'
@@ -201,7 +205,7 @@ class AccountControllerSpec extends spock.lang.Specification {
     1 * cryptoService.verifyPasswordHash(_ as String, _ as ManagedSubject) >>> true
     1 * cryptoService.generatePasswordHash(_ as ManagedSubject)
     1 * passwordValidationService.validate(_ as ManagedSubject) >>> [[true, []]]
-    
+
     flash.type == 'success'
     flash.message == 'controllers.aaf.vhr.account.completedetailschange.success'
     response.redirectedUrl == '/account/show'

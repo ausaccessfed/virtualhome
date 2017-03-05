@@ -1,0 +1,2 @@
+<!-- Set to true to get UI info from metadata to pass to VHR in servicename -->
+<util:constant id="shibboleth.authn.RemoteUser.populateUIInfo" static-field="java.lang.Boolean.TRUE" />

@@ -24,6 +24,9 @@ public class VhrBasicAuthFilter implements Filter {
   private String realm;
   private VhrBasicAuthValidator vhrBasicAuthValidator;
 
+  /** Name of request attribute to pass the username in */
+  private String usernameRequestAttributeName = "VHRUsername";
+
   Logger log = LoggerFactory.getLogger("aaf.vhr.idp.http.VhrBasicAuthFilter");
 
   @Override
@@ -52,8 +55,8 @@ public class VhrBasicAuthFilter implements Filter {
 
         if(remoteUser != null) {
           log.info ("Confirmed supplied credentials for " + credentials[0] + ", VH confirmed remoteUser value of " + remoteUser);
-          VhrRequestWrapper vhrRequestWrapper = new VhrRequestWrapper(request, remoteUser);
-          chain.doFilter(vhrRequestWrapper, response);
+          request.setAttribute(usernameRequestAttributeName, remoteUser);
+          chain.doFilter(request, response);
 
           return;
         }
@@ -74,6 +77,9 @@ public class VhrBasicAuthFilter implements Filter {
     String apiToken = filterConfig.getInitParameter("apiToken");
     String apiSecret = filterConfig.getInitParameter("apiSecret");
     String requestingHost = filterConfig.getInitParameter("requestingHost");
+
+    String uran = filterConfig.getInitParameter("usernameRequestAttributeName");
+    if (uran != null) { usernameRequestAttributeName = uran; };
 
     vhrBasicAuthValidator = new VhrBasicAuthValidator(apiServer, apiEndpoint, apiToken, apiSecret, requestingHost);
   }

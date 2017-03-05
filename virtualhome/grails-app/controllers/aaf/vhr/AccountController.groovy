@@ -177,7 +177,9 @@ class AccountController {
     def totpKey = GoogleAuthenticator.generateSecretKey()
     session.setAttribute(NEW_TOTP_KEY, totpKey)
 
-    def totpURL = GoogleAuthenticator.getQRBarcodeURL(managedSubjectInstance.login, request.serverName, totpKey)
+    def totpURL = GoogleAuthenticator.getQRBarcodeURL(managedSubjectInstance.login,
+                                                      request.serverName, totpKey,
+                                                      managedSubjectInstance.encodedTwoStepIssuer)
     [managedSubjectInstance:managedSubjectInstance, totpURL: totpURL]
   }
 
@@ -210,7 +212,9 @@ class AccountController {
       flash.type = 'error'
       flash.message = 'controllers.aaf.vhr.account.finish.twostep.error'
 
-      def totpURL = GoogleAuthenticator.getQRBarcodeURL(managedSubjectInstance.login, request.serverName, totpKey)
+      def totpURL = GoogleAuthenticator.getQRBarcodeURL(managedSubjectInstance.login,
+                                                        request.serverName, totpKey,
+                                                        managedSubjectInstance.encodedTwoStepIssuer)
 
       render view: 'enabletwostep', model: [managedSubjectInstance:managedSubjectInstance, totpURL: totpURL]
     }

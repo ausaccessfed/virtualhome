@@ -62,9 +62,14 @@ public class GoogleAuthenticator {
    * @param secret the secret that was previously generated for this user
    * @return the URL for the QR code to scan
    */
-  public static String getQRBarcodeURL(String user, String host, String secret) {
-    String format = "https://chart.googleapis.com/chart?chs=200x200&chld=M%%7C0&cht=qr&chl=otpauth://totp/%s@%s%%3Fsecret%%3D%s";
-    return String.format(format, user, host, secret);
+  public static String getQRBarcodeURL(String user, String host, String secret, String issuer) {
+    String formatWithIssuer = "https://chart.googleapis.com/chart?chs=200x200&chld=M%%7C0&cht=qr&chl=otpauth://totp/%s:%s@%s%%3Fsecret%%3D%s%%26issuer%%3D%s";
+    String formatWithoutIssuer = "https://chart.googleapis.com/chart?chs=200x200&chld=M%%7C0&cht=qr&chl=otpauth://totp/%s@%s%%3Fsecret%%3D%s";
+    if (issuer != null) {
+      return String.format(formatWithIssuer, issuer, user, host, secret, issuer);
+    } else {
+      return String.format(formatWithoutIssuer, user, host, secret);
+    }
   }
 
   /**

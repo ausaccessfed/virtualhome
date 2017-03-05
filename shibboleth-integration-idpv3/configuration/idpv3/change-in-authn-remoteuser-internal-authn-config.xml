@@ -1,0 +1,12 @@
+
+<!-- Do not check remoteUser -->
+    <util:constant id="shibboleth.authn.RemoteUser.checkRemoteUser" static-field="java.lang.Boolean.FALSE"/>
+
+<!-- And instead check the VHRUsername request attribute. -->
+<!-- The request attribute name is configured as the -->
+<!-- usernameRequestAttributeName filter init param in web.xml -->
+
+    <util:list id="shibboleth.authn.RemoteUser.checkAttributes">
+        <value>VHRUsername</value>
+    </util:list>
+

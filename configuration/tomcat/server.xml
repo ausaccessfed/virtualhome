@@ -8,7 +8,7 @@
   <Listener className="org.apache.catalina.core.ThreadLocalLeakPreventionListener" />
 
   <Service name="Catalina">
-    <Connector port="8009" protocol="AJP/1.3" redirectPort="8443" tomcatAuthentication="false" />
+    <Connector address="127.0.0.1" port="8009" protocol="AJP/1.3" redirectPort="8443" tomcatAuthentication="true" />
     <Engine name="Catalina" defaultHost="localhost">
       <Host name="localhost"  appBase="webapps" unpackWARs="true" autoDeploy="true">
         <Valve className="org.apache.catalina.valves.AccessLogValve" directory="logs"

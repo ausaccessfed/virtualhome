@@ -12,14 +12,13 @@ import test.shared.ShiroEnvironment
 @Build([Organization, Group, ManagedSubject, aaf.base.identity.Subject])
 @Mock([Organization, Group, ManagedSubject, StateChange])
 class ManagedSubjectControllerSpec  extends spock.lang.Specification {
-  
   @Shared def shiroEnvironment = new ShiroEnvironment()
 
   aaf.base.identity.Subject subject
   org.apache.shiro.subject.Subject shiroSubject
-  
-  def cleanupSpec() { 
-    shiroEnvironment.tearDownShiro() 
+
+  def cleanupSpec() {
+    shiroEnvironment.tearDownShiro()
   }
 
   def setup() {
@@ -254,7 +253,7 @@ class ManagedSubjectControllerSpec  extends spock.lang.Specification {
     ManagedSubject.metaClass.save { null }
 
     controller.sharedTokenService = sharedTokenService
-    
+
     when:
     controller.save()
 
@@ -393,7 +392,7 @@ class ManagedSubjectControllerSpec  extends spock.lang.Specification {
 
     savedManagedSubjectTestInstance.eduPersonEntitlement == "some:urn:value;some:other:urn:value"
   }
-  
+
   def 'ensure correct output from save with valid data, multiple eduPersonAffilliation but not saving sharedToken when valid create permission'() {
     setup:
     def sharedTokenService = Mock(aaf.vhr.SharedTokenService)
@@ -616,7 +615,7 @@ class ManagedSubjectControllerSpec  extends spock.lang.Specification {
     def managedSubjectTestInstance = ManagedSubject.build(group:group, organization:group.organization)
     shiroSubject.isPermitted("app:manage:organization:${group.organization.id}:group:${group.id}:managedsubject:${managedSubjectTestInstance.id}:edit") >> true
     managedSubjectTestInstance.getVersion() >> 20
-    
+
     managedSubjectTestInstance.properties.each {
       if(it.value) {
         if(grailsApplication.isDomainClass(it.value.getClass()))
@@ -651,7 +650,7 @@ class ManagedSubjectControllerSpec  extends spock.lang.Specification {
     group.organization.active = true
     def managedSubjectTestInstance = ManagedSubject.build(group:group, organization:group.organization, sharedToken:'abcd1234')
     shiroSubject.isPermitted("app:manage:organization:${group.organization.id}:group:${group.id}:managedsubject:${managedSubjectTestInstance.id}:edit") >> true
-    
+
     managedSubjectTestInstance.properties.each {
       if(it.value) {
         if(grailsApplication.isDomainClass(it.value.getClass()))
@@ -729,7 +728,7 @@ class ManagedSubjectControllerSpec  extends spock.lang.Specification {
     group.organization.active = true
     def managedSubjectTestInstance = ManagedSubject.build(group:group, organization:group.organization, sharedToken:'abcd1234', eduPersonEntitlement:'initial:urn;initial:urn:2')
     shiroSubject.isPermitted("app:manage:organization:${group.organization.id}:group:${group.id}:managedsubject:${managedSubjectTestInstance.id}:edit") >> true
-    
+
     managedSubjectTestInstance.properties.each {
       if(it.value) {
         if(grailsApplication.isDomainClass(it.value.getClass()))
@@ -935,7 +934,7 @@ class ManagedSubjectControllerSpec  extends spock.lang.Specification {
     group.organization.active = true
     def managedSubjectTestInstance = ManagedSubject.build(group:group, organization:group.organization)
     shiroSubject.isPermitted("app:manage:organization:${group.organization.id}:group:${group.id}:managedsubject:${managedSubjectTestInstance.id}:edit") >> true
-    
+
     controller.managedSubjectService = managedSubjectService
 
     expect:
@@ -975,7 +974,7 @@ class ManagedSubjectControllerSpec  extends spock.lang.Specification {
     group.organization.active = true
     def managedSubjectTestInstance = ManagedSubject.build(group:group, organization:group.organization)
     shiroSubject.isPermitted("app:manage:organization:${managedSubjectTestInstance.organization.id}:group:${managedSubjectTestInstance.group.id}:managedsubject:${managedSubjectTestInstance.id}:edit") >> true
-    
+
     expect:
     ManagedSubject.count() == 1
 
@@ -996,7 +995,7 @@ class ManagedSubjectControllerSpec  extends spock.lang.Specification {
     group.organization.active = true
     def managedSubjectTestInstance = ManagedSubject.build(locked:true, group:group, organization:group.organization)
     shiroSubject.isPermitted("app:manage:organization:${managedSubjectTestInstance.organization.id}:group:${managedSubjectTestInstance.group.id}:managedsubject:${managedSubjectTestInstance.id}:edit") >> true
-    
+
     expect:
     ManagedSubject.count() == 1
     managedSubjectTestInstance.locked
@@ -1007,7 +1006,7 @@ class ManagedSubjectControllerSpec  extends spock.lang.Specification {
     controller.toggleLock()
     managedSubjectTestInstance.refresh()
 
-    then:   
+    then:
     !managedSubjectTestInstance.locked
     flash.type == 'success'
     flash.message == 'controllers.aaf.vhr.managedsubject.togglelock.success'
@@ -1035,7 +1034,7 @@ class ManagedSubjectControllerSpec  extends spock.lang.Specification {
     group.organization.active = true
     def managedSubjectTestInstance = ManagedSubject.build(group:group, organization:group.organization)
     shiroSubject.isPermitted("app:administration") >> true
-    
+
     expect:
     ManagedSubject.count() == 1
 
@@ -1056,7 +1055,7 @@ class ManagedSubjectControllerSpec  extends spock.lang.Specification {
     group.organization.active = true
     def managedSubjectTestInstance = ManagedSubject.build(blocked:true, group:group, organization:group.organization)
     shiroSubject.isPermitted("app:administration") >> true
-    
+
     expect:
     ManagedSubject.count() == 1
     managedSubjectTestInstance.blocked
@@ -1067,7 +1066,7 @@ class ManagedSubjectControllerSpec  extends spock.lang.Specification {
     controller.toggleBlock()
     managedSubjectTestInstance.refresh()
 
-    then:   
+    then:
     !managedSubjectTestInstance.blocked
     flash.type == 'success'
     flash.message == 'controllers.aaf.vhr.managedsubject.toggleblock.success'
@@ -1079,7 +1078,7 @@ class ManagedSubjectControllerSpec  extends spock.lang.Specification {
     group.organization.active = true
     def managedSubjectTestInstance = ManagedSubject.build(group:group, organization:group.organization)
     shiroSubject.isPermitted("app:manage:organization:${managedSubjectTestInstance.organization.id}:group:${managedSubjectTestInstance.group.id}:managedsubject:${managedSubjectTestInstance.id}:edit") >> false
-    
+
     when:
     params.id = managedSubjectTestInstance.id
     def model = controller.toggleActive()
@@ -1095,7 +1094,7 @@ class ManagedSubjectControllerSpec  extends spock.lang.Specification {
     group.organization.active = true
     def managedSubjectTestInstance = ManagedSubject.build(group:group, organization:group.organization)
     shiroSubject.isPermitted("app:manage:organization:${managedSubjectTestInstance.organization.id}:group:${managedSubjectTestInstance.group.id}:managedsubject:${managedSubjectTestInstance.id}:edit") >> true
-    
+
     expect:
     ManagedSubject.count() == 1
 
@@ -1116,7 +1115,7 @@ class ManagedSubjectControllerSpec  extends spock.lang.Specification {
     group.organization.active = true
     def managedSubjectTestInstance = ManagedSubject.build(active:false, group:group, organization:group.organization)
     shiroSubject.isPermitted("app:manage:organization:${managedSubjectTestInstance.organization.id}:group:${managedSubjectTestInstance.group.id}:managedsubject:${managedSubjectTestInstance.id}:edit") >> true
-    
+
     expect:
     ManagedSubject.count() == 1
     !managedSubjectTestInstance.active
@@ -1127,7 +1126,7 @@ class ManagedSubjectControllerSpec  extends spock.lang.Specification {
     controller.toggleActive()
     managedSubjectTestInstance.refresh()
 
-    then:   
+    then:
     managedSubjectTestInstance.active
     flash.type == 'success'
     flash.message == 'controllers.aaf.vhr.managedsubject.toggleactive.success'
@@ -1139,7 +1138,7 @@ class ManagedSubjectControllerSpec  extends spock.lang.Specification {
     group.organization.active = true
     def managedSubjectTestInstance = ManagedSubject.build(group:group, organization:group.organization)
     shiroSubject.isPermitted("app:manage:organization:${managedSubjectTestInstance.organization.id}:group:${managedSubjectTestInstance.group.id}:managedsubject:${managedSubjectTestInstance.id}:edit") >> false
-    
+
     when:
     params.id = managedSubjectTestInstance.id
     def model = controller.toggleArchive()
@@ -1155,7 +1154,7 @@ class ManagedSubjectControllerSpec  extends spock.lang.Specification {
     group.organization.active = true
     def managedSubjectTestInstance = ManagedSubject.build(group:group, organization:group.organization)
     shiroSubject.isPermitted("app:manage:organization:${managedSubjectTestInstance.organization.id}:group:${managedSubjectTestInstance.group.id}:managedsubject:${managedSubjectTestInstance.id}:edit") >> true
-    
+
     expect:
     ManagedSubject.count() == 1
 
@@ -1176,7 +1175,7 @@ class ManagedSubjectControllerSpec  extends spock.lang.Specification {
     group.organization.active = true
     def managedSubjectTestInstance = ManagedSubject.build(archived:false, group:group, organization:group.organization)
     shiroSubject.isPermitted("app:manage:organization:${managedSubjectTestInstance.organization.id}:group:${managedSubjectTestInstance.group.id}:managedsubject:${managedSubjectTestInstance.id}:edit") >> true
-    
+
     expect:
     ManagedSubject.count() == 1
     !managedSubjectTestInstance.archived
@@ -1187,7 +1186,7 @@ class ManagedSubjectControllerSpec  extends spock.lang.Specification {
     controller.toggleArchive()
     managedSubjectTestInstance.refresh()
 
-    then:   
+    then:
     managedSubjectTestInstance.archived
     flash.type == 'success'
     flash.message == 'controllers.aaf.vhr.managedsubject.togglearchive.success'

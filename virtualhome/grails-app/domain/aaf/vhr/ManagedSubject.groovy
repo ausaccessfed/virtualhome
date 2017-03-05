@@ -4,11 +4,12 @@ import com.bloomhealthco.jasypt.GormEncryptedStringType
 
 import groovy.transform.EqualsAndHashCode
 import groovy.transform.ToString
+import groovy.time.TimeCategory
+
+import grails.util.Holders
 
 import aaf.base.identity.Subject
 import org.apache.shiro.SecurityUtils
-
-import groovy.time.TimeCategory
 
 @ToString(includeNames=true, includes="id, login, cn, email")
 @EqualsAndHashCode
@@ -98,7 +99,7 @@ class ManagedSubject {
     apiKey nullable:true, unique:true
     eptidKey nullable:true, unique:true
 
-    accountExpires nullable:true 
+    accountExpires nullable:true
 
     email blank:false, unique:true, email:true
     cn validator: {val, obj ->
@@ -143,14 +144,14 @@ class ManagedSubject {
   static transients = ['plainPassword', 'plainPasswordConfirmation']
 
   public boolean canCreate(Group owner) {
-    SecurityUtils.subject.isPermitted("app:administrator") || 
-    ( SecurityUtils.subject.isPermitted("app:manage:organization:${owner.organization.id}:group:${owner.id}:managedsubject:create") 
+    SecurityUtils.subject.isPermitted("app:administrator") ||
+    ( SecurityUtils.subject.isPermitted("app:manage:organization:${owner.organization.id}:group:${owner.id}:managedsubject:create")
       && owner.functioning() )
   }
 
   public boolean canMutate() {
-    SecurityUtils.subject.isPermitted("app:administrator") || 
-    ( SecurityUtils.subject.isPermitted("app:manage:organization:${organization.id}:group:${group.id}:managedsubject:${id}:edit") 
+    SecurityUtils.subject.isPermitted("app:administrator") ||
+    ( SecurityUtils.subject.isPermitted("app:manage:organization:${organization.id}:group:${group.id}:managedsubject:${id}:edit")
       && !archived && !blocked && group.functioning() )
   }
 
@@ -165,7 +166,7 @@ class ManagedSubject {
 
   public boolean canShow() {
     SecurityUtils.subject.isPermitted("app:manage:organization:${organization.id}:group:${group.id}:managedsubject:show")
-  } 
+  }
 
   public boolean canChangePassword() {
     !this.isExpired() && !locked && !blocked && !archived && organization?.functioning() && group?.functioning()
@@ -226,6 +227,15 @@ class ManagedSubject {
         twoStepSession.delete()
       }
     }
+  }
+
+  public String getEncodedTwoStepIssuer() {
+    def issuer = Holders.config.aaf.vhr.twosteplogin.issuer
+    if ( issuer && !issuer.isEmpty() )
+      // Double encode as used as parameter within parameter
+      URLEncoder.encode(URLEncoder.encode(issuer).replace('+', '%20'), 'UTF-8')
+    else
+      null
   }
 
   public boolean functioning() {

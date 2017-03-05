@@ -1,0 +1,50 @@
+apply plugin: 'java'
+
+def vhProperties = new Properties()
+vhProperties.load(file('../virtualhome/application.properties').newInputStream())
+
+version = vhProperties.get('app.version')
+archivesBaseName = 'vh-shib-integration'
+
+sourceSets {
+  main {
+    java {
+      srcDirs = ['src']
+    }
+  }
+}
+
+repositories {
+  mavenCentral()
+  maven {
+    url 'https://build.shibboleth.net/nexus/content/repositories/releases/'
+  }
+}
+
+dependencies {
+  // javax.servlet < 3.0 doesn't have ServletRequest.getServletContext()
+  compile 'org.apache.tomcat:tomcat-servlet-api:7.0.42'
+
+  [
+    'net.shibboleth.idp:idp-authn-api:3.2.1',
+    'net.shibboleth.idp:idp-ui:3.2.1',
+    'net.shibboleth.idp:idp-consent-api:3.2.1',
+    'net.shibboleth.utilities:java-support:7.2.0',
+    'org.opensaml:opensaml-profile-api:3.2.0',
+    'org.opensaml:opensaml-messaging-api:3.2.0',
+  ].each {
+    compile(it) {
+      transitive = false
+    }
+  }
+  compile 'joda-time:joda-time:2.9'
+  compile 'com.google.guava:guava:18.0'
+  compile 'com.google.code.findbugs:jsr305:3.0.0'
+
+  compile 'commons-codec:commons-codec:1.10'
+  compile 'commons-lang:commons-lang:2.4'
+  compile 'org.apache.httpcomponents:httpcore:4.3.3'
+  compile 'org.apache.httpcomponents:httpclient:4.3.6'
+  compile 'com.googlecode.json-simple:json-simple:1.1.1'
+  compile 'org.slf4j:slf4j-api:1.7.12'
+}

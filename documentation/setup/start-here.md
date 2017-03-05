@@ -3,19 +3,14 @@
 ## Introduction
 Welcome to the setup documents for the AAF Virtual Home software.
 
-This documentation is a work in process. We welcome your feedback as you use these documents. As they are stored in git you can feel free to send a pull request with your changes.
+This documentation is a work in process. We welcome your feedback as you use these documents. As they are stored in git **please send a pull request with your changes** should you identify any deficiencies.
 
-These documents haven't been fully vetted yet so I'd expect you might find errors, ommissions etc. You will almost certainly find speeling and error in grammar which you just did I suppose so at least we got that out of the way up front :-).
+## Audience
+These documents are primarily directed at technical folk who are getting a Virtual Home instance up and running. 
 
--- Bradley Beddoes
+Ensuring the environment in which you operate is secure and follows best practices is solely the responsibility of the deployer.  
 
-## Timelines
-As a rough guide it took me 2 days to do a full server install from scratch including having firewall and general new server problems resolved. Your milage might vary but the process is not yet as automated as I'd one day like to see it.
-
-Expect to find some rough edges the guides don't cover.
-
-I recommend that you lock your server to your local IP for all SSH/Web Requests while undertaking this process. Even moreso if your server is publicly accessible.
-
+That said, we do consider any deficiencies in best practice located in these documents as a bug that we'd like to have solved via the afore-mentioned pull request mechanism. 
 
 ## Following the guides
 You'll want to read the guides in the following order. After each one is complete you'll have progressed a complete part of the installation process.
@@ -27,3 +22,4 @@ You'll want to read the guides in the following order. After each one is complet
 5. Application
 6. Shibboleth IdP
 7. Data Migration
+8. Supporting ECP

@@ -85,7 +85,7 @@ class ManagedSubjectController {
         }
 
         if (!managedSubjectInstance.validate()) {
-          managedSubjectInstance.errors.each { println it}
+          managedSubjectInstance.errors.each { log.warn it}
           flash.type = 'error'
           flash.message = 'controllers.aaf.vhr.managedsubject.validate.failed'
           render(view: "create", model: [managedSubjectInstance: managedSubjectInstance])
@@ -199,7 +199,7 @@ class ManagedSubjectController {
       }
 
       bindData(managedSubjectInstance, params, [include: ['cn', 'email', 'eduPersonAssurance', 'displayName', 'accountExpires',
-                                                          'givenName', 'surname', 'mobileNumber', 'telephoneNumber', 'postalAddress', 
+                                                          'givenName', 'surname', 'mobileNumber', 'telephoneNumber', 'postalAddress',
                                                           'organizationalUnit']])
 
       if(SecurityUtils.subject.isPermitted("app:administrator")) {
