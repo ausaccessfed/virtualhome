@@ -177,6 +177,30 @@ class LoginControllerSpec extends spock.lang.Specification {
     !response.cookies[0].secure
   }
 
+  def "successful login with uApprove param sets uApprove session variable and redirects to IdP with uApprove param"() {
+    setup:
+    session.setAttribute(controller.SSO_URL, "https://idp.test.com/shibboleth-idp/authn")
+    params.uApproveConsentRevocation = "true"
+    def loginService = Mock(aaf.vhr.LoginService)
+    grailsApplication.config.aaf.vhr.login.validity_period_minutes = 1
+    grailsApplication.config.aaf.vhr.login.ssl_only_cookie = false
+
+    def ms = ManagedSubject.build(active:true, failedLogins: 0)
+    ms.organization.active = true
+
+    controller.loginService = loginService
+
+    when:
+    controller.login(ms.login, 'password')
+
+    then:
+    1 * loginService.passwordLogin(ms, _, _, _, _) >> true
+    response.redirectedUrl == "https://idp.test.com/shibboleth-idp/authn?uApprove.consent-revocation=true"
+    response.cookies[0].maxAge == 1 * 60
+    !response.cookies[0].secure
+    session.getAttribute(controller.UAPPROVE_CONSENT_REVOKE) == "true"
+  }
+
   def "successful login of account requiring totp with existing, valid, session cookie redirects to IdP loginssourl"() {
     setup:
     session.setAttribute(controller.SSO_URL, "https://idp.test.com/shibboleth-idp/authn")
@@ -316,6 +340,33 @@ class LoginControllerSpec extends spock.lang.Specification {
     then:
     1 * loginService.twoStepLogin(ms, 123456, _, _) >> true
     response.redirectedUrl == "https://idp.test.com/shibboleth-idp/authn"
+
+    response.cookies.size() == 1
+    response.cookies[0].maxAge == 60
+    !response.cookies[0].secure
+  }
+
+  def "successful twosteplogin with uApprove session sets cookies and redirects to IdP login ssourl with uApprove param"() {
+    setup:
+    session.setAttribute(controller.SSO_URL, "https://idp.test.com/shibboleth-idp/authn")
+    session.setAttribute(controller.UAPPROVE_CONSENT_REVOKE, "true")
+    def loginService = Mock(aaf.vhr.LoginService)
+    grailsApplication.config.aaf.vhr.login.validity_period_minutes = 1
+    grailsApplication.config.aaf.vhr.login.ssl_only_cookie = false
+
+    def ms = ManagedSubject.build(active:true, failedLogins: 0)
+    ms.organization.active = true
+
+    controller.loginService = loginService
+
+    session.setAttribute(controller.CURRENT_USER, ms.id)
+
+    when:
+    controller.twosteplogin(123456)
+
+    then:
+    1 * loginService.twoStepLogin(ms, 123456, _, _) >> true
+    response.redirectedUrl == "https://idp.test.com/shibboleth-idp/authn?uApprove.consent-revocation=true"
 
     response.cookies.size() == 1
     response.cookies[0].maxAge == 60

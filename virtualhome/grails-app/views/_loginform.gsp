@@ -23,6 +23,15 @@
         </div>
       </div>
       
+      <g:if test="${grailsApplication.config.aaf.vhr.login.uApprove_consent_revocation && (params.controller == "login")}">
+        <div class="control-group">
+          <div class="controls">
+            <input id="uApproveConsentRevocation" name="uApproveConsentRevocation" type="checkbox" value="true" />
+            <small><strong><g:message code="branding.uApproveConsentRevocation"/></strong><br><g:message code="branding.uApproveConsentRevocation.info"/></small>
+          </div>
+        </div>
+      </g:if>
+
       <g:if test="${requiresChallenge}">
         <div class="control-group">
           <label class="control-label"><g:message code="label.challengeresponse"/></label>
