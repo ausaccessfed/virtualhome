@@ -54,3 +54,24 @@ The VHR will increase access to the following subscriber groups:
 5. Usage reports
 6. High availability architecture
 7. Full integration into the AAF Federation Registry
+
+## Local Dependencies
+As of VH 1.5.0 (March 2017) there is an extra step required to build the AAF
+patched version of Groovy for dependency resolution purposes.
+
+To build AAF Groovy:
+
+1. Be on Java 7
+1. Be in the root directory of the virtualhome project checked out from
+Github
+1. `git submodule init`
+1. cd aaf-patched-groovy
+1. ./gradlew clean dist
+
+To build VH WAR file:
+
+1. Return to ../virtualhome and use `grails war` as normal.
+
+To develop VH code:
+
+1. Return to ../virtualhome and use `grails Y` as normal.

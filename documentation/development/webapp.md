@@ -45,9 +45,23 @@ If you're new to this space you'll want to get a few things up and running befor
 								   |- applicationbase
 								   |- virtualhome
 								   
-1. Build your war as follows
+1.  As of VH 1.5.0 (March 2017) there is an extra step required to build the AAF
+patched version of Groovy for dependency resolution purposes.
 
-		cd ~/Development/repositories/virtualhome/virtualhome
+To build AAF Groovy:
+
+    1. Be on Java 7
+    1. Be in the root directory of the virtualhome project checked out from
+    Github
+    1. `git submodule init`
+    1. cd aaf-patched-groovy
+    1. ./gradlew clean dist
+
+1. You can now develop as necessary in ../virtualhome
+
+1. Build the war as follows
+
+		cd ../virtualhome
 		grails compile
 		grails war
 		
