@@ -48,7 +48,7 @@ If you're new to this space you'll want to get a few things up and running befor
 1.  As of VH 1.5.0 (March 2017) there is an extra step required to build the AAF
 patched version of Groovy for dependency resolution purposes.
 
-To build AAF Groovy:
+    To build AAF Groovy:
 
     1. Be on Java 7
     1. Be in the root directory of the virtualhome project checked out from
