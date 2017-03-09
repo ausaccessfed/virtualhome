@@ -19,6 +19,8 @@ grails.project.dependency.resolution = {
   repositories {
     inherits true
 
+    flatDir name:"aaf-patched-groovy", dirs:"../aaf-patched-groovy/target/libs"
+
     grailsPlugins()
     grailsHome()
     grailsCentral()
@@ -33,6 +35,7 @@ grails.project.dependency.resolution = {
   }
 
   dependencies {
+    compile "org.codehaus:groovy-all:2.0.8+aaf.groovy7664"
     compile "commons-collections:commons-collections:3.2.2"
     compile "com.google.guava:guava:14.0"
 
