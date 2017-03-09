@@ -54,6 +54,7 @@ patched version of Groovy for dependency resolution purposes.
     1. Be in the root directory of the virtualhome project checked out from
     Github
     1. `git submodule init`
+    1. `git submodule update`
     1. cd aaf-patched-groovy
     1. ./gradlew clean dist
 
