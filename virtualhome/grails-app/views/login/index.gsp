@@ -28,7 +28,19 @@
           </ul>
 
           <br><br>
-          <center><r:img file="loginlogos.png" width="304" height="297"/></center>
+          <center>
+            <p>
+              <img src="https://s3-ap-southeast-2.amazonaws.com/aaf-assets/virtualhome/login-page/aero-logo.png"
+                   alt="Member of the Australasian eResearch Organisations"
+                   width="400" height="80"/>
+            </p>
+            <p>&nbsp;</p>
+            <p>
+              <img src="https://s3-ap-southeast-2.amazonaws.com/aaf-assets/virtualhome/login-page/caudit-logo.png"
+                   alt="Supported by the Council of Australasian University Directors of Information Technology"
+                   width="400" height="80"/>
+            </p>
+          </center>
         </div>
 
         <div id="loginform" class="span5 offset1">
