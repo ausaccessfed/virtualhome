@@ -38,7 +38,7 @@
             <div class="control-group">
               <label class="control-label" for="totp"><g:message code="label.2stepcode"/></label>
               <div class="controls">
-                <input id="totp" name="totp" type="text" autofocus="autofocus" class="required"/>
+                <input id="totp" name="totp" type="text" autofocus="autofocus" class="required" autocomplete="off"/>
               </div>
             </div>
 
