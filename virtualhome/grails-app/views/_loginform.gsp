@@ -25,18 +25,11 @@
       
       <g:if test="${requiresChallenge}">
         <div class="control-group">
-          <label class="control-label"><g:message code="label.challengeresponse"/></label>
           <div class="controls">
             <recaptcha:ifEnabled>
               <recaptcha:recaptcha theme="white" class="required"/>
             </recaptcha:ifEnabled>
-            <p>
-              <small>
-                <g:message code="templates.aaf.vhr.loginform.challengeresponse.help"/>
-              </small>
-            </p>
           </div>
-          
         </div>
         <br>
       </g:if>
