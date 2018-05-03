@@ -54,7 +54,7 @@ grails.project.dependency.resolution = {
   */
   plugins {
     compile ":csv:0.3.1"
-    compile ":recaptcha:0.6.4"
+    compile ":recaptcha:1.2.0"
     compile ":jasypt-encryption:1.1.0"
   }
 }

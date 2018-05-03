@@ -153,6 +153,7 @@
             <li><a href="#tab-accounts-archived" data-toggle="tab">Archived</a></li>
             <li><a href="#tab-accounts-locked" data-toggle="tab">Locked</a></li>
             <li><a href="#tab-accounts-blocked" data-toggle="tab">Blocked</a></li>
+            <li><a href="#tab-accounts-all" data-toggle="tab">All</a></li>
           </ul>
 
           <div class="tab-content">
@@ -162,6 +163,7 @@
             <g:render template="/templates/render_accounts" model="[tab:'tab-accounts-archived', collection:groupInstance.subjects.findAll{it.archived}]" />
             <g:render template="/templates/render_accounts" model="[tab:'tab-accounts-locked', collection:groupInstance.subjects.findAll{it.locked}]" />
             <g:render template="/templates/render_accounts" model="[tab:'tab-accounts-blocked', collection:groupInstance.subjects.findAll{it.blocked}]" />
+            <g:render template="/templates/render_accounts" model="[tab:'tab-accounts-all', collection:groupInstance.subjects]" />
           </div>
 
         </div>

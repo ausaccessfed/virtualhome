@@ -26,9 +26,6 @@
             <li>Better security for your users. Password resets use one time codes instead of having you set something on their behalf; and</li>
             <li>The ability to manage many more groups and users than was previously possible.</li>
           </ul>
-
-          <br><br>
-          <center><r:img file="loginlogos.png" width="304" height="297"/></center>
         </div>
 
         <div id="loginform" class="span5 offset1">

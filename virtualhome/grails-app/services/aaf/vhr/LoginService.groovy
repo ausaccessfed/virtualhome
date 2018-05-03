@@ -129,6 +129,7 @@ class LoginService implements InitializingBean{
     Cookie cookie = new Cookie(LoginService.TWOSTEP_COOKIE_NAME, twoStepSession.value)
     cookie.maxAge = maxAge
     cookie.secure = grailsApplication.config.aaf.vhr.login.ssl_only_cookie
+    cookie.httpOnly = true
     cookie.path = grailsApplication.config.aaf.vhr.login.path
     response.addCookie(cookie)
 
