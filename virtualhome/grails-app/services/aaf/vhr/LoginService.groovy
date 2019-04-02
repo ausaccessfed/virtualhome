@@ -44,6 +44,13 @@ class LoginService implements InitializingBean{
     loginCache.getIfPresent(sessionID)
   }
 
+  // Temporary workaround for NPE when CAPTCHA is required but g-recaptcha-response is not provided in params.
+  // This issue is fixed in recaptcha plugin 1.7.0, but version 1.7.0 would require Grails 2.4,
+  // so we are instead doing this interim workaround (exposing details of the recaptcha plugin)
+  private boolean recaptchaResponsePresent(params) {
+    return params["g-recaptcha-response"] != null
+  }
+
   public boolean passwordLogin(ManagedSubject managedSubjectInstance, String password, def request, def session, def params) {
     if(!managedSubjectInstance.canLogin()) {
       String reason = "User attempted login but account is disabled."
@@ -55,7 +62,7 @@ class LoginService implements InitializingBean{
       return false
     }
 
-    if( managedSubjectInstance.requiresLoginCaptcha() && !recaptchaService.verifyAnswer(session, request.getRemoteAddr(), params)) {
+    if( managedSubjectInstance.requiresLoginCaptcha() && (!recaptchaResponsePresent(params) || !recaptchaService.verifyAnswer(session, request.getRemoteAddr(), params))) {
       String reason = "User provided invalid captcha data."
       String requestDetails = createRequestDetails(request)
 
