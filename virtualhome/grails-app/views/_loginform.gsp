@@ -8,6 +8,12 @@
       </div>
     </g:if>
 
+    <g:if test="${loginWarning}">
+      <div class="alert alert-block alert-warning login-warning">
+        <g:message code="templates.aaf.vhr.loginform.captcha-warning"/>
+      </div>
+    </g:if>
+
     <fieldset>
       <div class="control-group">
         <label class="control-label" for="username"><g:message code="label.username"/></label>
