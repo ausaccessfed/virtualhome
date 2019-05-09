@@ -75,7 +75,32 @@ class LoginServiceSpec extends spock.lang.Specification {
     ms.stateChanges.toArray()[0].reason == "User attempted login but account is disabled."
   }
 
-  def 'managedSubject that requires captcha must input one'() {
+  def 'managedSubject that requires captcha and provides one gets it checked'() {
+    setup:
+    def request = Mock(javax.servlet.http.HttpServletRequest)
+    def session = Mock(javax.servlet.http.HttpSession)
+    def params = ['g-recaptcha-response':'response']
+    ms.failedLogins = 3
+    ms.active = true
+    ms.organization.active = true
+
+    expect:
+    ms.requiresLoginCaptcha()
+
+    when:
+    def outcome = service.passwordLogin(ms, 'password', request, session, params)
+
+    then:
+    1 * recaptchaService.verifyAnswer(_,_,_) >> false
+
+    !outcome
+    ms.stateChanges.size() == 1
+    ms.stateChanges.toArray()[0].category == 'login_attempt'
+    ms.stateChanges.toArray()[0].reason == "User provided invalid captcha data."
+    service.loginCache.size() == 0
+  }
+
+  def 'managedSubject that requires captcha and does not provide one fails without verifying captcha'() {
     setup:
     def request = Mock(javax.servlet.http.HttpServletRequest)
     def session = Mock(javax.servlet.http.HttpSession)
@@ -91,7 +116,7 @@ class LoginServiceSpec extends spock.lang.Specification {
     def outcome = service.passwordLogin(ms, 'password', request, session, params)
 
     then:
-    1 * recaptchaService.verifyAnswer(_,_,_) >> false
+    0 * recaptchaService.verifyAnswer(_,_,_) >> false
 
     !outcome
     ms.stateChanges.size() == 1

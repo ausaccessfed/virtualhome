@@ -42,7 +42,8 @@ class LoginController {
       if(managedSubjectInstance) {
         log.debug "FAILED_USER is set for $managedSubjectInstance indicating previous failure. Rendering default login screen."
         session.removeAttribute(FAILED_USER)
-        return [loginError:true, requiresChallenge:managedSubjectInstance.requiresLoginCaptcha()]
+        def failedCaptcha = managedSubjectInstance.stateChanges?.sort{it.dateCreated}?.last()?.event == StateChangeType.FAILCAPTCHA
+        return [loginError: !failedCaptcha, loginWarning: failedCaptcha, requiresChallenge:managedSubjectInstance.requiresLoginCaptcha()]
       }
     }
   }
