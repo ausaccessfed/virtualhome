@@ -178,7 +178,7 @@ class AccountControllerSpec extends spock.lang.Specification {
     1 * passwordValidationService.validate(_ as ManagedSubject) >>> [[false, ['some.error', 'some.other.error']]]
 
     flash.type == 'error'
-    flash.message == 'controllers.aaf.vhr.account.completedetailschange.password.invalid'
+    flash.message == 'controllers.aaf.vhr.account.completedetailschange.new.password.invalid'
     view == '/account/changedetails'
     model.managedSubjectInstance == managedSubjectTestInstance
   }
