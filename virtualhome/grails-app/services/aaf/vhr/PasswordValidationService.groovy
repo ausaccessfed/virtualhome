@@ -48,7 +48,7 @@ class PasswordValidationService {
     }
 
     if(subject.plainPassword.toLowerCase().contains(subject.login.toLowerCase())) {
-      log.warn("The submitted plaintext passwords for $subject don't match, rejecting.")
+      log.warn("The submitted plaintext passwords for $subject contains the username, rejecting.")
       subject.errors.rejectValue('plainPassword', 'aaf.vhr.passwordvalidationservice.containslogin')
       subject.discard()
       return [false, ['aaf.vhr.passwordvalidationservice.containslogin'], subject]
